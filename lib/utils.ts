@@ -53,6 +53,12 @@ export const dataUrl = `data:image/svg+xml;base64,${toBase64(
 // ==== End
 
 // FORM URL QUERY
+interface FormUrlQueryParams {
+  searchParams: URLSearchParams;
+  key: string;
+  value: string | null;
+}
+
 export const formUrlQuery = ({
   searchParams,
   key,
@@ -66,11 +72,16 @@ export const formUrlQuery = ({
 };
 
 // REMOVE KEY FROM QUERY
+interface RemoveUrlQueryParams {
+  searchParams: URLSearchParams;
+  keysToRemove: string[];
+}
+
 export function removeKeysFromQuery({
   searchParams,
   keysToRemove,
 }: RemoveUrlQueryParams) {
-  const currentUrl = qs.parse(searchParams);
+  const currentUrl = qs.parse(searchParams.toString());
 
   keysToRemove.forEach((key) => {
     delete currentUrl[key];
@@ -85,19 +96,29 @@ export function removeKeysFromQuery({
 }
 
 // DEBOUNCE
-export const debounce = (func: (...args: any[]) => void, delay: number) => {
+export const debounce = <T extends unknown[]>(
+  func: (...args: T) => void,
+  delay: number
+) => {
   let timeoutId: NodeJS.Timeout | null;
-  return (...args: any[]) => {
+  return (...args: T) => {
     if (timeoutId) clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func.apply(null, args), delay);
+    timeoutId = setTimeout(() => func(...args), delay);
   };
 };
 
-// GE IMAGE SIZE
+// GET IMAGE SIZE
 export type AspectRatioKey = keyof typeof aspectRatioOptions;
+
+interface ImageDimensions {
+  width?: number;
+  height?: number;
+  aspectRatio?: AspectRatioKey;
+}
+
 export const getImageSize = (
   type: string,
-  image: any,
+  image: ImageDimensions,
   dimension: "width" | "height"
 ): number => {
   if (type === "fill") {
@@ -131,24 +152,37 @@ export const download = (url: string, filename: string) => {
 };
 
 // DEEP MERGE OBJECTS
-export const deepMergeObjects = (obj1: any, obj2: any) => {
-  if(obj2 === null || obj2 === undefined) {
-    return obj1;
+type UnknownObject = Record<string, unknown>;
+
+export const deepMergeObjects = <T extends UnknownObject, U extends UnknownObject>(
+  obj1: T,
+  obj2: U
+): T & U => {
+  if (obj2 === null || obj2 === undefined) {
+    return obj1 as T & U;
   }
 
-  let output = { ...obj2 };
+  let output = { ...obj2 } as T & U;
 
   for (let key in obj1) {
     if (obj1.hasOwnProperty(key)) {
+      const obj1Value = obj1[key];
+      const obj2Value = obj2[key];
+      
       if (
-        obj1[key] &&
-        typeof obj1[key] === "object" &&
-        obj2[key] &&
-        typeof obj2[key] === "object"
+        obj1Value &&
+        typeof obj1Value === "object" &&
+        obj2Value &&
+        typeof obj2Value === "object" &&
+        !Array.isArray(obj1Value) &&
+        !Array.isArray(obj2Value)
       ) {
-        output[key] = deepMergeObjects(obj1[key], obj2[key]);
+        output[key as keyof (T & U)] = deepMergeObjects(
+          obj1Value as UnknownObject,
+          obj2Value as UnknownObject
+        ) as unknown as (T & U)[keyof (T & U)];
       } else {
-        output[key] = obj1[key];
+        output[key as keyof (T & U)] = obj1Value as (T & U)[keyof (T & U)];
       }
     }
   }

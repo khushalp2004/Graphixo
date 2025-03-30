@@ -18,39 +18,32 @@ declare type CreateUserParams = {
   };
   
   // ====== IMAGE PARAMS
+  declare type ImageConfig = {
+    [key: string]: string | number | boolean | undefined | null;
+  };
+  
+  declare type ImageData = {
+    title: string;
+    publicId: string;
+    transformationType: string;
+    width: number;
+    height: number;
+    config: ImageConfig;
+    secureURL: string;
+    transformationURL: string;
+    aspectRatio: string | undefined;
+    prompt: string | undefined;
+    color: string | undefined;
+  };
+  
   declare type AddImageParams = {
-    image: {
-      title: string;
-      publicId: string;
-      transformationType: string;
-      width: number;
-      height: number;
-      config: any;
-      secureURL: string;
-      transformationURL: string;
-      aspectRatio: string | undefined;
-      prompt: string | undefined;
-      color: string | undefined;
-    };
+    image: ImageData;
     userId: string;
     path: string;
   };
   
   declare type UpdateImageParams = {
-    image: {
-      _id: string;
-      title: string;
-      publicId: string;
-      transformationType: string;
-      width: number;
-      height: number;
-      config: any;
-      secureURL: string;
-      transformationURL: string;
-      aspectRatio: string | undefined;
-      prompt: string | undefined;
-      color: string | undefined;
-    };
+    image: ImageData & { _id: string };
     userId: string;
     path: string;
   };
@@ -118,6 +111,24 @@ declare type CreateUserParams = {
     searchParams: { [key: string]: string | string[] | undefined };
   };
   
+  // ====== IMAGE INTERFACE
+  declare interface IImage {
+    _id: string;
+    title: string;
+    transformationType: string;
+    publicId: string;
+    secureURL: string;
+    width?: number;
+    height?: number;
+    config?: ImageConfig;
+    transformationURL?: string;
+    aspectRatio?: string;
+    prompt?: string;
+    color?: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }
+  
   declare type TransformationFormProps = {
     action: "Add" | "Update";
     userId: string;
@@ -128,7 +139,10 @@ declare type CreateUserParams = {
   };
   
   declare type TransformedImageProps = {
-    image: any;
+    image: {
+      url: string;
+    //   [key: string]: any; // For any additional image properties not explicitly defined
+    };
     type: string;
     title: string;
     transformationConfig: Transformations | null;
