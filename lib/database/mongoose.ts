@@ -6,6 +6,9 @@ interface MongooseConnection {
   conn: Mongoose | null;
   promise: Promise<Mongoose> | null;
 }
+declare global {
+  let mongoose: MongooseConnection | undefined;
+}
 
 let cached: MongooseConnection = (global as any).mongoose
 

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { navLinks } from '@/constants';
 import { usePathname } from 'next/navigation';
 import { Button } from '../ui/button';
+import React from 'react';
 
 const Sidebar = () => {
     const pathname=usePathname();
