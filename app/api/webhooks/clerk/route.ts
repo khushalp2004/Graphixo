@@ -1,5 +1,7 @@
 /* eslint-disable camelcase */
-import { clerkClient } from "@clerk/nextjs/server";
+// "use client";
+// import { clerkClient } from "@clerk/nextjs/server";
+import { clerkClient } from "@clerk/clerk-sdk-node";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
@@ -61,29 +63,32 @@ export async function POST(req: Request) {
   if (eventType === "user.created") {
     const { id, email_addresses, image_url, first_name, last_name, username } = evt.data;
 
-    if (!username || !email_addresses[0]?.email_address) {
-        return new Response("Username or email missing", { status: 400 });
-      }
-
     const user = {
       clerkId: id,
       email: email_addresses[0].email_address,
       username: username!,
-      firstName: first_name,
-      lastName: last_name,
-      photo: image_url,
+      firstName: first_name ?? "",
+      lastName: last_name ?? "",
+      photo: image_url ?? "",
     };
 
     const newUser = await createUser(user);
 
     // Set public metadata
     if (newUser) {
-      await clerkClient.users.updateUserMetadata(id, {
-        publicMetadata: {
-          userId: newUser._id,
-        },
-      });
-    }
+        try {
+          // const client=clerkClient();
+          await clerkClient.users.updateUserMetadata(id, {
+            // Set the public metadata
+            publicMetadata: {
+              userId: newUser._id.toString(), // Ensure it's a string
+            },
+          });
+        } catch (err) {
+          console.error("Error updating Clerk metadata:", err);
+          // Handle error appropriately
+        }
+      }
 
     return NextResponse.json({ message: "OK", user: newUser });
   }
@@ -93,8 +98,8 @@ export async function POST(req: Request) {
     const { id, image_url, first_name, last_name, username } = evt.data;
 
     const user = {
-      firstName: first_name,
-      lastName: last_name,
+      firstName: first_name ?? "",
+      lastName: last_name ?? "",
       username: username!,
       photo: image_url,
     };
