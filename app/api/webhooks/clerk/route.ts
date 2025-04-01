@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     if (!username || !email_addresses[0]?.email_address) {
         return new Response("Username or email missing", { status: 400 });
       }
-      
+
     const user = {
       clerkId: id,
       email: email_addresses[0].email_address,
