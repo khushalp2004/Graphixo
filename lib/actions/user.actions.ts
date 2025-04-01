@@ -6,7 +6,6 @@ import User from "../database/models/user.model";
 import { connectToDatabase } from "../database/mongoose";
 import { handleError } from "../utils";
 
-
 // Typically in your user.actions.ts file
 export interface CreateUserParams {
   clerkId: string;
@@ -16,6 +15,7 @@ export interface CreateUserParams {
   lastName: string;
   photo: string;
 }
+
 // CREATE
 export async function createUser(user: CreateUserParams) {
   try {
