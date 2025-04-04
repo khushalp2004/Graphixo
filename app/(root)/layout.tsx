@@ -1,6 +1,7 @@
 import Sidebar from '@/components/shared/Sidebar'
 import MobileNav from '@/components/shared/MobileNav'
 import React from 'react'
+import { Toaster } from 'sonner'
 
 const layout = ({children}:{children: React.ReactNode}) => {
   return (
@@ -13,6 +14,7 @@ const layout = ({children}:{children: React.ReactNode}) => {
             {children}
         </div>
       </div>
+      <Toaster />
     </main>
   )
 }
