@@ -31,6 +31,7 @@ import MediaUploader from "./MediaUploader"
 import { addImage, updateImage } from "@/lib/actions/image.actions"
 import { updateCredits } from "@/lib/actions/user.actions"
 import { InsufficientCreditsModal } from "./InsufficientCreditsModal"
+import { Loader2 } from "lucide-react"
 
 // Type definitions
 type Transformations = {
@@ -127,7 +128,7 @@ const TransformationForm = ({
           if(newImage) {
             form.reset()
             setImage(data)
-            router.push(`/transformations/${newImage._id}`)
+            router.push('/')
           }
         } catch (error) {
           console.log(error);
@@ -147,7 +148,7 @@ const TransformationForm = ({
           })
 
           if(updatedImage) {
-            router.push(`/transformations/${updatedImage._id}`)
+            router.push('/')
           }
         } catch (error) {
           console.log(error);
@@ -189,20 +190,29 @@ const TransformationForm = ({
   }
 
   const onTransformHandler = async () => {
-    setIsTransforming(true)
+    setIsTransforming(true);
+    try {
+      if (newTransformation) {
+        setTransformationConfig(
+          deepMergeObjects(newTransformation, transformationConfig || {})
+        )
+      }
 
-    if (newTransformation) {
-      setTransformationConfig(
-        deepMergeObjects(newTransformation, transformationConfig || {})
-      )
-    }
+      setNewTransformation(null)
 
-    setNewTransformation(null)
-
-    startTransition(async () => {
       await updateCredits(userId, creditFee)
-    })
+    } finally {
+      setIsTransforming(false);
+    }
   }
+
+  useEffect(() => {
+    if (data && action === 'Update') {
+      setImage(data);
+      setTransformationConfig(data.config);
+      setNewTransformation(transformationType.config as Transformations);
+    }
+  }, [data, action, transformationType.config]);
 
   useEffect(() => {
     if(image && (type === 'restore' || type === 'removeBackground')) {
@@ -233,7 +243,7 @@ const TransformationForm = ({
                 onValueChange={(value) => onSelectFieldHandler(value, field.onChange)}
                 value={field.value}
               >
-                <SelectTrigger className="select-field">
+                <SelectTrigger className="select-field bg-white">
                   <SelectValue placeholder="Select size" />
                 </SelectTrigger>
                 <SelectContent>
@@ -310,14 +320,21 @@ const TransformationForm = ({
             )}
           />
 
-          <TransformedImage 
-            image={image}
-            type={type}
-            title={form.getValues().title}
-            isTransforming={isTransforming}
-            setIsTransforming={setIsTransforming}
-            transformationConfig={transformationConfig || {}}
-          />
+          {isTransforming ? (
+            <div className="flex flex-col items-center justify-center h-[450px] w-full rounded-[10px] border border-dashed bg-purple-100/20">
+              <Loader2 className="h-10 w-10 animate-spin text-purple-500" />
+              <p className="mt-2 text-sm text-gray-500">Transforming your image...</p>
+            </div>
+          ) : (
+            <TransformedImage 
+              image={image}
+              type={type}
+              title={form.getValues().title}
+              isTransforming={isTransforming}
+              setIsTransforming={setIsTransforming}
+              transformationConfig={transformationConfig || {}}
+            />
+          )}
         </div>
 
         <div className="flex flex-col gap-4">

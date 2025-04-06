@@ -7,6 +7,7 @@ import User from "../database/models/user.model";
 import Image from "../database/models/image.model";
 import { redirect } from "next/navigation";
 import { v2 as cloudinary } from "cloudinary";
+import { AddImageParams, UpdateImageParams } from "@/types";
 
 // 🔹 Setup Cloudinary Once
 cloudinary.config({
@@ -211,21 +212,64 @@ export async function getUserImages({
   limit = 9,
   page = 1,
   userId,
+  searchQuery = "",
 }: {
   limit?: number;
   page: number;
   userId: string;
+  searchQuery?: string;
 }) {
   try {
     console.log("Connecting to database...");
     await connectToDatabase();
 
+    // First find the user by their Clerk ID
+    const user = await User.findOne({ clerkId: userId });
+    if (!user) {
+      console.error("❌ User not found with Clerk ID:", userId);
+      return {
+        data: [],
+        totalPages: 0,
+      };
+    }
+
     const skipAmount = (Number(page) - 1) * limit;
-    console.log("Fetching images for user:", userId);
+    console.log("Fetching images for user:", user._id);
 
-    const images = await populateUser(Image.find({ author: userId }).sort({ updatedAt: -1 }).skip(skipAmount).limit(limit).lean());
+    type MongoQuery = {
+      author: any;
+      $and?: Array<{
+        author: any;
+        $or?: Array<{
+          [key: string]: { $regex: string; $options: string };
+        }>;
+      }>;
+    };
 
-    const totalImages = await Image.countDocuments({ author: userId });
+    const query: MongoQuery = { author: user._id };
+    if (searchQuery) {
+      query.$and = [
+        {
+          author: user._id,
+          $or: [
+            { title: { $regex: searchQuery, $options: 'i' } },
+            { transformationType: { $regex: searchQuery, $options: 'i' } },
+            { prompt: { $regex: searchQuery, $options: 'i' } }
+          ]
+        }
+      ];
+    }
+
+    // Fetch all images for the user
+    const images = await populateUser(
+      Image.find(query)
+      .sort({ updatedAt: -1 })
+      .skip(skipAmount)
+      .limit(limit)
+      .lean()
+    );
+
+    const totalImages = await Image.countDocuments(query);
 
     return {
       data: JSON.parse(JSON.stringify(images)),
