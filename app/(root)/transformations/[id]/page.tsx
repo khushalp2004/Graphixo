@@ -8,17 +8,12 @@ import { Button } from "@/components/ui/button";
 import { getImageById } from "@/lib/actions/image.actions";
 import { getImageSize } from "@/lib/utils";
 import { DeleteConfirmation } from "@/components/shared/DeleteConfirmation";
+import { SearchParamProps } from "@/types";
 
-interface SearchParamProps {
-  params: {
-    id: string;
-  };
-}
-
-const ImageDetails = async ({ params: { id } }: SearchParamProps) => {
+const ImageDetails = async ({ params }: SearchParamProps) => {
   const { userId } = await auth();
-
-  const image = await getImageById(id);
+  const resolvedParams = await params;
+  const image = await getImageById(resolvedParams.id);
   
   if (!image) {
     return <div className="flex justify-center items-center h-screen">

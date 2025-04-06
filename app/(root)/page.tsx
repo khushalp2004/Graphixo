@@ -5,21 +5,21 @@ import Image from "next/image"
 import Link from "next/link"
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { SearchParamProps } from "@/types"
 
-interface SearchParamsProps {
-  searchParams: { [key: string]: string | string[] | undefined };
+type PageProps = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-const Home = async ({ searchParams }: SearchParamsProps) => {
+const Home = async ({ searchParams }: PageProps) => {
   const { userId } = await auth();
   
   // If no user is logged in, redirect to sign-in page
   if (!userId) {
     redirect('/sign-in');
   }
-  const page = Number(searchParams?.page) || 1;
-  const searchQuery = (searchParams?.query as string) || '';
+  const resolvedSearchParams = await searchParams;
+  const page = Number(resolvedSearchParams?.page) || 1;
+  const searchQuery = (resolvedSearchParams?.query as string) || '';
 
   const images = await getUserImages({ 
     page, 
