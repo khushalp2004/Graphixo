@@ -5,10 +5,9 @@ import Image from "next/image"
 import Link from "next/link"
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { PageProps } from "@/types";
 
-type PageProps = {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
+
 
 const Home = async ({ searchParams }: PageProps) => {
   const { userId } = await auth();
@@ -17,7 +16,7 @@ const Home = async ({ searchParams }: PageProps) => {
   if (!userId) {
     redirect('/sign-in');
   }
-  const resolvedSearchParams = await searchParams;
+  const resolvedSearchParams =  searchParams;
   const page = Number(resolvedSearchParams?.page) || 1;
   const searchQuery = (resolvedSearchParams?.query as string) || '';
 

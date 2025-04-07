@@ -4,14 +4,16 @@ import { transformationTypes } from '@/constants'
 import { getUserById } from '@/lib/actions/user.actions';
 import {auth} from "@clerk/nextjs/server"
 import { redirect } from 'next/navigation';
-import { SearchParamProps, TransformationTypeKey } from '@/types';
+import { PageProps, TransformationTypeKey } from '@/types';
 
-const AddTransformationTypePage = async ({ params }: SearchParamProps) => {
-  const { type } = params;
+const AddTransformationTypePage = async ({ searchParams }: PageProps) => {
+  // First get the userId and verify authentication
   const { userId } = await auth();
-  const transformation = transformationTypes[type as TransformationTypeKey];
+  if(!userId) redirect('/sign-in');
 
-  if(!userId) redirect('/sign-in')
+  // Then access the params
+  const { type } = searchParams;
+  const transformation = transformationTypes[type as TransformationTypeKey];
 
   const user = await getUserById(userId);
 

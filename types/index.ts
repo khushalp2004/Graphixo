@@ -1,3 +1,5 @@
+import { IImage } from "@/lib/database/models/image.model";
+
 // ====== USER PARAMS
 export type CreateUserParams = {
   clerkId: string;
@@ -112,9 +114,9 @@ export type RemoveUrlQueryParams = {
 };
 
 
-export type SearchParamProps = {
+export type PageProps = {
   searchParams: { [key: string]: string | string[] | undefined };
-  params: { [key: string]: string };
+  // params:{ [key: string]: string };
 };
 
 
