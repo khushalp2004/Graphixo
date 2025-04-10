@@ -114,9 +114,9 @@ export type RemoveUrlQueryParams = {
 };
 
 
-export type PageProps = {
+export type SearchPageProps = {
   searchParams: { [key: string]: string | string[] | undefined };
-  // params:{ [key: string]: string };
+  params:{ [key: string]: string };
 };
 
 

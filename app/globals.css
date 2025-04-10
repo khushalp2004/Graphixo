@@ -348,7 +348,7 @@
 
   /* Home Page */
   .home {
-    @apply sm:flex justify-center items-center hidden h-72 flex-col gap-4 rounded-[20px] border bg-purple-500 bg-cover bg-no-repeat p-10 shadow-inner;
+    @apply sm:flex justify-center items-center hidden h-72 flex-col gap-4 rounded-[20px] border bg-gradient-to-r from-blue-600 to-violet-600 bg-cover bg-no-repeat p-10 shadow-inner;
   }
 
   .home-heading {

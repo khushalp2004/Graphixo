@@ -6,9 +6,9 @@ import TransformationForm from "@/components/shared/TransformationForm";
 import { transformationTypes } from "@/constants";
 import { getUserById } from "@/lib/actions/user.actions";
 import { getImageById } from "@/lib/actions/image.actions";
-import { SearchParamProps, TransformationTypeKey } from "@/types";
+import { SearchPageProps, TransformationTypeKey } from "@/types";
 
-const Page = async ({ params: { id } }: SearchParamProps) => {
+const Page = async ({ params: { id } }: SearchPageProps) => {
   const { userId } = await auth();
 
   if (!userId) redirect("/sign-in");
