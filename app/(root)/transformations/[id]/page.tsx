@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button";
 import { getImageById } from "@/lib/actions/image.actions";
 import { getImageSize } from "@/lib/utils";
 import { DeleteConfirmation } from "@/components/shared/DeleteConfirmation";
-import { SearchPageProps } from "@/types";
+import { SearchPageProps, Param } from "@/types";
 
 
 
 const ImageDetails = async ({ params }: SearchPageProps) => {
   const { userId } = await auth();
-  const resolvedParams = params;
+  const resolvedParams = params as Param & { id: string };
   const image = await getImageById(resolvedParams.id);
   
   if (!image) {

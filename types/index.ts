@@ -113,10 +113,11 @@ export type RemoveUrlQueryParams = {
   keysToRemove: string[];
 };
 
-
+export type Param=Promise<{ [key: string]: string }>
+export type SearchParams=Promise<{ [key: string]: string | string[] | undefined }>
 export type SearchPageProps = {
-  searchParams: { [key: string]: string | string[] | undefined };
-  params:{ [key: string]: string };
+  searchParams: SearchParams;
+  params:Param;
 };
 
 

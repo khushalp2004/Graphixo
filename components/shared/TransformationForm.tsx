@@ -91,15 +91,36 @@ const TransformationForm = ({
  
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
+    console.log('Submitting form with values:', values);
+    console.log('Current image state:', image);
+    console.log('Transformation config:', transformationConfig);
     
 
     if(data || image) {
-      const transformationUrl = getCldImageUrl({
+      const baseOptions = {
         width: image?.width,
         height: image?.height,
         src: image?.publicId,
         ...transformationConfig
-      })
+      };
+
+      let transformationUrl;
+      if (type === 'recolor' && transformationConfig?.recolor) {
+        const recolorOptions = {
+          ...baseOptions,
+          effects: [{
+            recolor: {
+              prompt: transformationConfig.recolor.prompt || '',
+              to: transformationConfig.recolor.to || '#ffffff'
+            },
+            colorize: '100'
+          }]
+        };
+        transformationUrl = getCldImageUrl(recolorOptions);
+        console.log('Recolor transformation URL:', transformationUrl);
+      } else {
+        transformationUrl = getCldImageUrl(baseOptions);
+      }
 
       const imageData = {
         title: values.title,
@@ -177,16 +198,26 @@ const TransformationForm = ({
 
   const onInputChangeHandler = (fieldName: string, value: string, type: string, onChangeField: (value: string) => void) => {
     debounce(() => {
-      setNewTransformation((prevState: any) => ({
-        ...(prevState || {}),
-        [type]: {
-          ...(prevState?.[type] || {}),
-          [fieldName === 'prompt' ? 'prompt' : 'to']: value 
+      setNewTransformation((prevState: any) => {
+        const newState = {
+          ...(prevState || {}),
+          [type]: {
+            ...(prevState?.[type] || {}),
+            [fieldName === 'prompt' ? 'prompt' : 'to']: value || (fieldName === 'prompt' ? '' : '#ffffff'),
+            effect: 'colorize'
+          }
+        };
+        
+        // Special handling for recolor transformations
+        if (type === 'recolor' && fieldName === 'color') {
+          newState[type].effect = 'colorize';
         }
-      }))
+        
+        return newState;
+      });
     }, 1000)();
       
-    return onChangeField(value)
+    return onChangeField(value);
   }
 
   const onTransformHandler = async () => {
