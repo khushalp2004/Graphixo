@@ -8,10 +8,10 @@ import { getUserImages } from "@/lib/actions/image.actions";
 import { getUserById } from "@/lib/actions/user.actions";
 
 type SearchParamProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     page?: string;
     query?: string;
-  };
+  }>;
 };
 
 const Profile = async ({ searchParams }: SearchParamProps) => {
@@ -19,8 +19,9 @@ const Profile = async ({ searchParams }: SearchParamProps) => {
 
   if (!userId) redirect("/sign-in");
 
-  const page = Number(searchParams?.page) || 1;
-  const searchQuery = (searchParams?.query as string) || '';
+  const resolvedSearchParams = await searchParams;
+  const page = Number(resolvedSearchParams?.page) || 1;
+  const searchQuery = (resolvedSearchParams?.query as string) || '';
 
   const user = await getUserById(userId);
   const images = await getUserImages({ 
@@ -76,3 +77,4 @@ const Profile = async ({ searchParams }: SearchParamProps) => {
 };
 
 export default Profile;
+

@@ -118,6 +118,8 @@ export const navLinks = [
       ],
     },
   ];
+
+  type RestoreType = Promise<{}>
   
   export const transformationTypes = {
     restore: {

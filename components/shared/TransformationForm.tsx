@@ -191,7 +191,7 @@ const TransformationForm = ({
       height: imageSize.height,
     }))
 
-    setNewTransformation(transformationType.config as Transformations);
+    setNewTransformation(transformationType.config as unknown as Transformations);
 
     return onChangeField(value)
   }
@@ -241,13 +241,13 @@ const TransformationForm = ({
     if (data && action === 'Update') {
       setImage(data);
       setTransformationConfig(data.config);
-      setNewTransformation(transformationType.config as Transformations);
+      setNewTransformation(transformationType.config as unknown as Transformations);
     }
   }, [data, action, transformationType.config]);
 
   useEffect(() => {
     if(image && (type === 'restore' || type === 'removeBackground')) {
-      setNewTransformation(transformationType.config as Transformations)
+      setNewTransformation(transformationType.config as unknown as Transformations)
     }
   }, [image, transformationType.config, type])
 

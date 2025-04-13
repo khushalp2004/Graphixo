@@ -6,9 +6,10 @@ import { TransformationTypeKey } from '@/types';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
-const AddTransformationTypePage = async ({ params: { type } }: { params: { type: keyof typeof transformationTypes } }) => {
+const AddTransformationTypePage = async ({ params }: { params: Promise<{ type: keyof typeof transformationTypes }> }) => {
+  const { type } = await params;
   const { userId } = await auth();
-  const transformation = transformationTypes[type];
+  const transformation = transformationTypes[type] as unknown as { title: string; subTitle: string; type: string };
 
   if(!userId) redirect('/sign-in')
 

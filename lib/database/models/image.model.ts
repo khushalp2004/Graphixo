@@ -1,6 +1,8 @@
 import { Document, model, models, Schema } from "mongoose"
+import { StaticImport } from "next/dist/shared/lib/get-img-props";
 
 export interface IImage extends Document{
+    icon: string | StaticImport;
     _id: string;
     title: string;
     transformationType: string;
