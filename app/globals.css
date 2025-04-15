@@ -107,7 +107,7 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border ;
   }
   body {
     @apply bg-background text-foreground;
@@ -348,7 +348,23 @@
 
   /* Home Page */
   .home {
-    @apply sm:flex justify-center items-center hidden h-72 flex-col gap-4 rounded-[20px] border bg-gradient-to-r from-blue-600 to-violet-600 bg-cover bg-no-repeat p-10 shadow-inner;
+    @apply sm:flex block justify-center items-center hidden h-72 flex-col gap-4 rounded-[20px] border bg-[url('../public/assets/images/banner.png')] bg-cover bg-no-repeat p-10 shadow-inner z-10 relative;
+  }
+  .home::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(125, 100, 255, 0.1) 0%, transparent 50%);
+    z-index: -1;
+    animation: float 15s infinite alternate ease-in-out;
+  }
+  @keyframes float {
+    0% { transform: translate(-10%, -10%) scale(1); }
+    50% { transform: translate(10%, 10%) scale(1.1); }
+    100% { transform: translate(-10%, -10%) scale(1); }
   }
 
   .home-heading {
@@ -511,6 +527,10 @@
 .proceed-button {
   @apply w-full bg-purple-600 text-white hover:bg-purple-700
          font-medium rounded-lg py-2 transition-colors;
+}
+.swiper {
+  width: 600px;
+  height: 300px;
 }
 }
 
