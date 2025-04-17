@@ -132,7 +132,7 @@ const DynamicSlider = () => {
             data-swiper-parallax="-300"
           >
             <span className="font-mono text-sm opacity-70 block mb-1">AI-POWERED</span>
-            AI Features
+           Features Includes
           </h2>
         </div>
         

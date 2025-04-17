@@ -206,7 +206,7 @@
 
   /* =====  SHADCN OVERRIDES */
   .button {
-      @apply py-4 px-6 flex justify-center items-center gap-3 rounded-full font-semibold text-[16px] leading-[140%] !ring-offset-0 focus-visible:!ring-offset-0;
+      @apply py-4 px-6 flex justify-center items-center gap-3 rounded-lg font-semibold text-[16px] leading-[140%] !ring-offset-0 focus-visible:!ring-offset-0;
   }
 
   .dropdown-content {
@@ -330,7 +330,11 @@
   }
 
   .sidebar-nav_element {
-    @apply flex justify-center items-center font-semibold text-[16px] leading-[140%] w-full whitespace-nowrap rounded-full bg-cover transition-all hover:shadow-inner;
+    @apply flex justify-center items-center font-semibold text-[16px] leading-[140%] w-full whitespace-nowrap rounded-lg bg-cover transition-all hover:shadow-inner;
+  }
+  .sidebar-nav_element:hover {
+    box-shadow: inset 1px 3px 4px 0 rgba(0, 0, 0, 0.2),
+                inset 1px -3px 4px 0 rgba(255, 255, 255, 0.15);
   }
 
   .sidebar-link {
@@ -531,6 +535,53 @@
 .swiper {
   width: 600px;
   height: 300px;
+}
+
+/* Add this to your existing globals.css */
+.prose {
+  color: #374151;
+}
+
+.prose h2,
+.prose h3,
+.prose h4 {
+  color: #111827;
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.prose h2 {
+  font-size: 1.5em;
+}
+
+.prose h3 {
+  font-size: 1.25em;
+}
+
+.prose p {
+  margin-bottom: 1em;
+  line-height: 1.7;
+}
+
+.prose ul,
+.prose ol {
+  margin-bottom: 1em;
+  padding-left: 1.5em;
+}
+
+.prose li {
+  margin-bottom: 0.5em;
+}
+
+.prose-purple a {
+  color: #9333ea;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.prose-purple a:hover {
+  text-decoration: underline;
 }
 }
 
