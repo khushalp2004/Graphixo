@@ -75,8 +75,8 @@ const categories = [
   { name: 'Technology', slug: 'technology', count: 2 }
 ];
 
-export default function BlogPage({ searchParams }: { searchParams: { category?: string } }) {
-  const activeCategory = searchParams.category || 'all';
+export default async function BlogPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
+  const activeCategory = (await searchParams).category || 'all';
   
   const filteredPosts = activeCategory === 'all' 
     ? blogPosts 

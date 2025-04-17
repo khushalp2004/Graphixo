@@ -12,11 +12,11 @@ export type BlogPost = {
   date: string;
   image: string;
   category: string;
-  author: {
+  author: Promise<{
     name: string;
     avatar: string;
     role: string;
-  };
+  }>;
   readTime: string;
   tags: string[];
 };
@@ -50,11 +50,11 @@ const blogPosts: BlogPost[] = [
     date: 'May 15, 2023',
     image: '/assets/images/blog-1.webp',
     category: 'Tutorial',
-    author: {
+    author: Promise.resolve({
       name: 'Sarah Johnson',
       avatar: '/assets/images/authors/sarah.jpg',
       role: 'Product Designer'
-    },
+    }),
     readTime: '4 min read',
     tags: ['AI Tools', 'Photo Editing', 'Creativity']
   },
@@ -91,11 +91,11 @@ const blogPosts: BlogPost[] = [
     date: 'April 28, 2023',
     image: '/assets/images/blog-2.webp',
     category: 'Insights',
-    author: {
+    author: Promise.resolve({
       name: 'Michael Chen',
       avatar: '/assets/images/authors/michael.jpg',
       role: 'AI Researcher'
-    },
+    }),
     readTime: '6 min read',
     tags: ['AI', 'Future Tech', 'Machine Learning']
   },
@@ -136,11 +136,11 @@ const blogPosts: BlogPost[] = [
     date: 'March 10, 2023',
     image: '/assets/images/blog-3.webp',
     category: 'Technology',
-    author: {
+    author: Promise.resolve({
       name: 'David Park',
       avatar: '/assets/images/authors/david.jpg',
       role: 'Lead Engineer'
-    },
+    }),
     readTime: '8 min read',
     tags: ['Algorithms', 'AI', 'Technical']
   },
@@ -183,11 +183,11 @@ const blogPosts: BlogPost[] = [
     date: 'February 22, 2023',
     image: '/assets/images/blog-4.webp',
     category: 'Tutorial',
-    author: {
+    author: Promise.resolve({
       name: 'Emma Rodriguez',
       avatar: '/assets/images/authors/emma.jpg',
       role: 'Color Specialist'
-    },
+    }),
     readTime: '5 min read',
     tags: ['Color Grading', 'Tutorial', 'AI Assistant']
   },
@@ -260,11 +260,11 @@ const blogPosts: BlogPost[] = [
     date: 'January 18, 2023',
     image: '/assets/images/blog-5.webp',
     category: 'Insights',
-    author: {
+    author: Promise.resolve({
       name: 'James Wilson',
       avatar: '/assets/images/authors/james.jpg',
       role: 'Professional Photographer'
-    },
+    }),
     readTime: '7 min read',
     tags: ['Workflow', 'Comparison', 'Photography']
   },
@@ -343,18 +343,18 @@ const blogPosts: BlogPost[] = [
     date: 'December 5, 2022',
     image: '/assets/images/blog-6.webp',
     category: 'Technology',
-    author: {
+    author: Promise.resolve({
       name: 'Lisa Zhang',
       avatar: '/assets/images/authors/lisa.jpg',
       role: 'Systems Architect'
-    },
+    }),
     readTime: '9 min read',
     tags: ['API', 'Performance', 'Engineering']
   }
 ];
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const post = blogPosts.find(post => post.id === Number(params.id));
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const post = await blogPosts.find(async post => post.id === Number((await params).id));
   
   if (!post) {
     return {
@@ -372,8 +372,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
-export default function BlogPostPage({ params }: { params: { id: string } }) {
-  const post = blogPosts.find(post => post.id === Number(params.id));
+export default async function BlogPostPage({ params }: { params: Promise<{ id: string }> }) {
+  const post = await blogPosts.find(async post => post.id === Number((await params).id));
   
   if (!post) {
     notFound();
@@ -390,16 +390,9 @@ export default function BlogPostPage({ params }: { params: { id: string } }) {
           
           <div className="flex items-center gap-4 mb-6">
             <div className="flex items-center gap-2">
-              <Image 
-                src={post.author.avatar} 
-                alt={post.author.name}
-                width={40}
-                height={40}
-                className="rounded-full"
-              />
               <div>
-                <p className="font-medium">{post.author.name}</p>
-                <p className="text-sm text-gray-500">{post.author.role}</p>
+                <p className="font-medium">{(await post.author).name}</p>
+                <p className="text-sm text-gray-500">{(await post.author).role}</p>
               </div>
             </div>
             <div className="text-sm text-gray-500">
