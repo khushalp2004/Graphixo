@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-// Define the type for our blog post
+// Keep all Promise<> types exactly as they were
 export type BlogPost = {
   id: number;
   title: string;
@@ -21,7 +21,7 @@ export type BlogPost = {
   tags: string[];
 };
 
-// Mock database of blog posts
+// Keep the blogPosts array exactly as is
 const blogPosts: BlogPost[] = [
   {
     id: 1,
@@ -354,7 +354,9 @@ const blogPosts: BlogPost[] = [
 ];
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const post = await blogPosts.find(async post => post.id === Number((await params).id));
+  const resolvedParams = await params;
+  const postId = Number(resolvedParams.id);
+  const post = blogPosts.find(post => post.id === postId);
   
   if (!post) {
     return {
@@ -373,11 +375,16 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ id: string }> }) {
-  const post = await blogPosts.find(async post => post.id === Number((await params).id));
+  const resolvedParams = await params;
+  const postId = Number(resolvedParams.id);
+  const post = blogPosts.find(post => post.id === postId);
   
   if (!post) {
     notFound();
   }
+
+  // Keep the author as Promise and await it when used
+  const author = await post.author;
 
   return (
     <main className="max-w-4xl mx-auto py-12 px-4">
@@ -391,8 +398,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ id: s
           <div className="flex items-center gap-4 mb-6">
             <div className="flex items-center gap-2">
               <div>
-                <p className="font-medium">{(await post.author).name}</p>
-                <p className="text-sm text-gray-500">{(await post.author).role}</p>
+                <p className="font-medium">{author.name}</p>
+                <p className="text-sm text-gray-500">{author.role}</p>
               </div>
             </div>
             <div className="text-sm text-gray-500">
@@ -437,27 +444,27 @@ export default async function BlogPostPage({ params }: { params: Promise<{ id: s
         <div className="grid md:grid-cols-2 gap-8">
           {blogPosts
             .filter(p => p.id !== post.id)
-            .map(post => (
-              <div key={post.id} className="bg-purple-50 rounded-lg overflow-hidden hover:shadow-lg transition">
+            .map(relatedPost => (
+              <div key={relatedPost.id} className="bg-purple-50 rounded-lg overflow-hidden hover:shadow-lg transition">
                 <div className="relative h-48">
                   <Image 
-                    src={post.image} 
-                    alt={post.title} 
+                    src={relatedPost.image} 
+                    alt={relatedPost.title} 
                     fill
                     className="object-cover"
                   />
                 </div>
                 <div className="p-6">
                   <span className="inline-block bg-purple-600 text-white text-xs font-medium px-2 py-1 rounded mb-3">
-                    {post.category}
+                    {relatedPost.category}
                   </span>
                   <h3 className="text-xl font-semibold mb-2">
-                    <Link href={`/blog/${post.id}`} className="hover:text-purple-600 transition">
-                      {post.title}
+                    <Link href={`/blog/${relatedPost.id}`} className="hover:text-purple-600 transition">
+                      {relatedPost.title}
                     </Link>
                   </h3>
-                  <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                  <p className="text-sm text-gray-500">{post.date}</p>
+                  <p className="text-gray-600 mb-4">{relatedPost.excerpt}</p>
+                  <p className="text-sm text-gray-500">{relatedPost.date}</p>
                 </div>
               </div>
             ))}

@@ -85,7 +85,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
   return (
     <main className="max-w-6xl mx-auto py-12 px-4">
       <div className="text-center mb-16">
-        <h1 className="text-4xl font-bold mb-4"><Link href="/">Graphi<span className='text-green-600'>X</span>o</Link> Blog</h1>
+        <h1 className="text-4xl font-bold mb-4"><Link href="/">Graphi<span className='text-green-600'>X</span>o👈🏻</Link> Home</h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
           Tips, tutorials, and insights about AI-powered image editing
         </p>
