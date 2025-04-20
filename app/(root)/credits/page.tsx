@@ -27,13 +27,13 @@ const Credits = async () => {
         <ul className="credits-list">
           {plans.map((plan) => (
             <li key={plan.name} className="credits-item">
-              <div className="flex-center flex-col gap-3">
+              <div className="flex justify-center items-center flex-col gap-3">
                 <Image src={plan.icon} alt="check" width={50} height={50} />
-                <p className="p-20-semibold mt-2 text-purple-500">
+                <p className="font-semibold text-[20px] leading-[140%] mt-2 text-purple-500">
                   {plan.name}
                 </p>
-                <p className="h1-semibold text-dark-600">${plan.price}</p>
-                <p className="p-16-regular">{plan.credits} Credits</p>
+                <p className="text-[36px] font-semibold sm:text-[44px] leading-[120%] sm:leading-[56px] text-gray-700">${plan.price}</p>
+                <p className="font-normal text-[16px] leading-[140%]">{plan.credits} Credits</p>
               </div>
 
               {/* Inclusions */}
@@ -51,7 +51,7 @@ const Credits = async () => {
                       width={24}
                       height={24}
                     />
-                    <p className="p-16-regular">{inclusion.label}</p>
+                    <p className="font-normal text-[16px] leading-[140%]">{inclusion.label}</p>
                   </li>
                 ))}
               </ul>
