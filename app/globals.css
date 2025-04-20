@@ -372,7 +372,7 @@
   }
 
   .home-heading {
-    @apply text-[36px] font-semibold sm:text-[44px] leading-[120%] sm:leading-[56px] max-w-[500px] flex-wrap text-center text-white shadow-sm border-2;
+    @apply text-[36px] font-semibold sm:text-[44px] leading-[120%] sm:leading-[56px] max-w-[500px] flex-wrap text-center text-gray-200 shadow-sm border-2;
   }
 
   /* Credits Page */

@@ -27,7 +27,7 @@ const Home = async ({ searchParams }: SearchPageProps) => {
               href="/"
               className="bg-gradient-to-r from-slate-700 to-slate-900 to-indigo-400 inline-block text-transparent bg-clip-text"
             >
-              Graphi<h1 className="bg-linear-65 from-purple-500 to-pink-500 inline-block text-transparent bg-clip-text">
+              Graphi<h1 className="bg-linear-65 from-green-600 to-green-600 inline-block text-transparent bg-clip-text">
                 X
               </h1>o
             </Link>
@@ -84,7 +84,7 @@ const Home = async ({ searchParams }: SearchPageProps) => {
             href="/"
             className="bg-gradient-to-r from-slate-700 to-slate-900 to-indigo-400 inline-block text-transparent bg-clip-text"
           >
-            Graphi<h1 className="bg-linear-65 from-purple-500 to-pink-500 inline-block text-transparent bg-clip-text">
+            Graphi<h1 className="bg-linear-65 from-green-600 to-green-600 inline-block text-transparent bg-clip-text">
               X
             </h1>o
           </Link>
