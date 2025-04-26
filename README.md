@@ -14,6 +14,39 @@ pnpm dev
 bun dev
 ```
 
+Add .env.local file in thr project
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_a2V5LWdyaXp6bHktMjMuY2xlcmsuYWNjb3VudHMuZGV2JA
+CLERK_SECRET_KEY=sk_test_2C6FaO1JDplxK2nojw42D6JakKOgDjz2q86DqJYysQ
+WEBHOOK_SECRET=whsec_WlBD/e4fn5H2gSI0I2eLmPhlimgW98z6
+
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/
+NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/
+
+
+#mongodb
+MONGODB_URL=mongodb+srv://Khushalp2004:khushalpatil29@cluster0.3aqu3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+
+
+#cloudinary
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=dyv5wyxuz
+CLOUDINARY_API_KEY=534948432818925
+CLOUDINARY_API_SECRET=tU5ozXaxJvy9Fb11j2G5KyeM4dY
+
+#stripe
+NEXT_STRIPE_PUBLISHABLE_KEY=pk_test_51R2sqAQULgrJR8ahMtQp5nXZuCRESPOsnaGZ29zLlrbOY35EE9PzKYBzIwACST1RGwFyzMZR3Z9XXYa4kUxiZKzY00cUsK4w0B
+STRIPE_SECRET_KEY=sk_test_51R2sqAQULgrJR8ahEObHb1sZvTm6kxhY7JlfyUEjACOBOkjMOt9usRei6mwM5Qqmvp7bZIOBTIrEGbFwbOaPFcux001ozGehn4
+STRIPE_WEBHOOK_SECRET=whsec_9yZ636hQJddcGiXVh1Y3Uio0Nqk3fwNW
+
+#other
+# NEXT_PUBLIC_SERVER_URL=http://localhost:3000
+NEXT_PUBLIC_SERVER_URL=https://graphixo.vercel.app
+
+# #node_mailer
+# EMAIL_USER=patilkhushal54321@gmail.com
+# EMAIL_PASSWORD=khushalp2004
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
