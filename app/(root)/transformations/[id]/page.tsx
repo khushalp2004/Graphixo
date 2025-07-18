@@ -26,98 +26,104 @@ const ImageDetails = async ({ params }: SearchPageProps) => {
   console.log("Original Image secureURL:", image?.secureUrl);
   console.log("Transformed Image secureURL:", image?.publicId);
 
-  return (
-    <>
-      <Header title={image.title} />
+  // return (
+  //   <>
+  //     <Header title={image.title} />
 
-      <section className="mt-5 flex flex-wrap gap-4">
-        <div className="font-medium text-[14px] leading-[120%] md:font-medium text-[16px] leading-[140%] flex gap-2">
-          <p className="text-gray-600">Transformation:</p>
-          <p className=" capitalize text-purple-400">
-            {image.transformationType}
-          </p>
-        </div>
+  //     <section className="mt-5 flex flex-wrap gap-4">
+  //       <div className="font-medium text-[14px] leading-[120%] md:font-medium text-[16px] leading-[140%] flex gap-2">
+  //         <p className="text-gray-600">Transformation:</p>
+  //         <p className=" capitalize text-purple-400">
+  //           {image.transformationType}
+  //         </p>
+  //       </div>
 
-        {image.prompt && (
-          <>
-            <p className="hidden text-gray-400/50 md:block">&#x25CF;</p>
-            <div className="font-medium text-[14px] leading-[120%] md:font-medium text-[16px] leading-[140%] flex gap-2 ">
-              <p className="text-gray-600">Prompt:</p>
-              <p className=" capitalize text-purple-400">{image.prompt}</p>
-            </div>
-          </>
-        )}
+  //       {image.prompt && (
+  //         <>
+  //           <p className="hidden text-gray-400/50 md:block">&#x25CF;</p>
+  //           <div className="font-medium text-[14px] leading-[120%] md:font-medium text-[16px] leading-[140%] flex gap-2 ">
+  //             <p className="text-gray-600">Prompt:</p>
+  //             <p className=" capitalize text-purple-400">{image.prompt}</p>
+  //           </div>
+  //         </>
+  //       )}
 
-        {image.color && (
-          <>
-            <p className="hidden text-gray-400/50 md:block">&#x25CF;</p>
-            <div className="font-medium text-[14px] leading-[120%] md:font-medium text-[16px] leading-[140%] flex gap-2">
-              <p className="text-gray-600">Color:</p>
-              <p className=" capitalize text-purple-400">{image.color}</p>
-            </div>
-          </>
-        )}
+  //       {image.color && (
+  //         <>
+  //           <p className="hidden text-gray-400/50 md:block">&#x25CF;</p>
+  //           <div className="font-medium text-[14px] leading-[120%] md:font-medium text-[16px] leading-[140%] flex gap-2">
+  //             <p className="text-gray-600">Color:</p>
+  //             <p className=" capitalize text-purple-400">{image.color}</p>
+  //           </div>
+  //         </>
+  //       )}
 
-        {image.aspectRatio && (
-          <>
-            <p className="hidden text-gray-400/50 md:block">&#x25CF;</p>
-            <div className="font-medium text-[14px] leading-[120%] md:font-medium text-[16px] leading-[140%] flex gap-2">
-              <p className="text-gray-600">Aspect Ratio:</p>
-              <p className=" capitalize text-purple-400">{image.aspectRatio}</p>
-            </div>
-          </>
-        )}
-      </section>
+  //       {image.aspectRatio && (
+  //         <>
+  //           <p className="hidden text-gray-400/50 md:block">&#x25CF;</p>
+  //           <div className="font-medium text-[14px] leading-[120%] md:font-medium text-[16px] leading-[140%] flex gap-2">
+  //             <p className="text-gray-600">Aspect Ratio:</p>
+  //             <p className=" capitalize text-purple-400">{image.aspectRatio}</p>
+  //           </div>
+  //         </>
+  //       )}
+  //     </section>
 
-      <section className="mt-10 border-t border-gray-400/15">
-        <div className="transformation-grid">
-          {/* MEDIA UPLOADER */}
-          <div className="flex flex-col gap-4">
-            <h3 className="font-bold text-[30px] leading-[140%] text-gray-600">Original</h3>
+  //     <section className="mt-10 border-t border-gray-400/15">
+  //       <div className="transformation-grid">
+  //         {/* MEDIA UPLOADER */}
+  //         <div className="flex flex-col gap-4">
+  //           <h3 className="font-bold text-[30px] leading-[140%] text-gray-600">Original</h3>
 
             
-                <Image
-                  width={getImageSize(image.transformationType, image, "width")}
-                  height={getImageSize(image.transformationType, image, "height")}
-                  src={image.secureUrl}
-                  alt="Original image"
-                  className="transformation-original_image"
-                />
+  //               <Image
+  //                 width={getImageSize(image.transformationType, image, "width")}
+  //                 height={getImageSize(image.transformationType, image, "height")}
+  //                 src={image.secureUrl}
+  //                 alt="Original image"
+  //                 className="transformation-original_image"
+  //               />
               
             
-          </div>
+  //         </div>
 
-          {/* TRANSFORMED IMAGE */}
-          {image?.publicId ? (
-            <TransformedImage
-              image={image}
-              type={image.transformationType}
-              title={image.title}
-              isTransforming={false}
-              transformationConfig={image.config}
-              hasDownload={true}
-            />
-          ) : (
-            <div className="transformed-placeholder">
-              <p>Transformed image not available</p>
-            </div>
-          )}
-        </div>
+  //         {/* TRANSFORMED IMAGE */}
+  //         {image?.publicId ? (
+  //           <TransformedImage
+  //             image={image}
+  //             type={image.transformationType}
+  //             title={image.title}
+  //             isTransforming={false}
+  //             transformationConfig={image.config}
+  //             hasDownload={true}
+  //           />
+  //         ) : (
+  //           <div className="transformed-placeholder">
+  //             <p>Transformed image not available</p>
+  //           </div>
+  //         )}
+  //       </div>
 
-        {userId === image.author.clerkId && (
-          <div className="mt-4 space-y-4">
-            <Button asChild type="button" className="submit-button capitalize">
-              <Link href={`/transformations/${image._id}/update`}>
-                Update Image
-              </Link>
-            </Button>
+  //       {userId === image.author.clerkId && (
+  //         <div className="mt-4 space-y-4">
+  //           <Button asChild type="button" className="submit-button capitalize">
+  //             <Link href={`/transformations/${image._id}/update`}>
+  //               Update Image
+  //             </Link>
+  //           </Button>
 
-            <DeleteConfirmation imageId={image._id?.toString() ?? ''} />
-          </div>
-        )}
-      </section>
+  //           <DeleteConfirmation imageId={image._id?.toString() ?? ''} />
+  //         </div>
+  //       )}
+  //     </section>
+  //   </>
+  // );
+
+  return (
+    <>
+    <h1>Update Transformation(under construction)</h1>
     </>
-  );
+  )
 };
 
 export default ImageDetails;
