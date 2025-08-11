@@ -30,6 +30,11 @@ export const navLinks = [
       icon: "/assets/icons/camera.svg",
     },
     {
+      label: "Background Remove",
+      route: "/transformations/add/objectRecolor",
+      icon: "/assets/icons/filter.svg",
+    },
+    {
       label: "Profile",
       route: "/profile",
       icon: "/assets/icons/profile.svg",
@@ -119,7 +124,7 @@ export const navLinks = [
     },
   ];
 
-  type RestoreType = Promise<{}>
+  // type RestoreType = Promise<{}>
   
   export const transformationTypes = {
     restore: {

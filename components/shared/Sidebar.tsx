@@ -7,14 +7,14 @@ import { navLinks } from '@/constants';
 import { usePathname } from 'next/navigation';
 import { Button } from '../ui/button';
 import React, { useState, useEffect } from 'react';
-import { MagicWand, Lightning, Users } from '@phosphor-icons/react'; // or any other icon library
+import { Users } from 'lucide-react';
 
 const slides = [
   {
     id: 1,
     title: "AI-Powered Editing",
     content: "Transform your images with our advanced AI tools",
-    icon: <MagicWand size={32} weight="duotone" className="text-purple-600" />,
+    icon: <span role="img" aria-label="magic wand" className="text-purple-600 text-2xl">🪄</span>,
     bgColor: "bg-purple-50",
     borderColor: "border-purple-200",
   },
@@ -22,7 +22,7 @@ const slides = [
     id: 2,
     title: "Lightning Fast",
     content: "Process images in seconds with our optimized engine",
-    icon: <Lightning size={32} weight="duotone" className="text-blue-600" />,
+    icon: <span role="img" aria-label="lightning" className="text-blue-600 text-2xl">⚡</span>,
     bgColor: "bg-blue-50",
     borderColor: "border-blue-200",
   },
@@ -30,7 +30,7 @@ const slides = [
     id: 3,
     title: "Trusted by Many",
     content: "Join our community of thousands of creators",
-    icon: <Users size={32} weight="duotone" className="text-green-600" />,
+    icon: <Users size={32} height="duotone" className="text-green-600" />,
     bgColor: "bg-green-50",
     borderColor: "border-green-200",
   },
