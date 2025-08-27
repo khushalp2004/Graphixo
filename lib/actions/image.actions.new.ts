@@ -8,6 +8,7 @@ import Image from "../database/models/image.model";
 import { redirect } from "next/navigation";
 import { v2 as cloudinary } from "cloudinary";
 import { AddImageParams, UpdateImageParams } from "@/types";
+import GeminiService from "../services/clipdrop.service";
 
 // 🔹 Setup Cloudinary Once
 cloudinary.config({
@@ -289,74 +290,38 @@ export async function getUserImages({
 export async function cartoonifyImage(imageUrl: string, debugMode: boolean = false) {
   try {
     if (debugMode) {
-      console.log('🎨 Starting cartoonify transformation...');
+      console.log('🎨 Starting enhanced cartoonify transformation...');
       console.log('📸 Original image URL:', imageUrl);
     }
 
-    // Check if we're in development mode and provide fallback
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🚀 Development mode detected - using mock cartoonify');
+    // Force real transformation regardless of environment
+    const useRealTransformation = true;
+    
+    if (useRealTransformation) {
+      // Use Gemini API for actual transformation
+      const result = await GeminiService.cartoonifyImage(imageUrl, debugMode);
       
-      // In development, return the original image with a slight modification
-      // This allows testing without the external API
-      if (debugMode) {
-        console.log('🎭 Using mock cartoonify for development');
-      }
-      
-      // For now, return original image URL for testing
-      // In production, this would use the real API
-      return imageUrl;
-    }
-
-    // Using free cartoonify API
-    const cartoonifyUrl = `https://cartoonify-api.herokuapp.com/cartoonify?url=${encodeURIComponent(imageUrl)}`;
-    
-    if (debugMode) {
-      console.log('🔗 API URL:', cartoonifyUrl);
-    }
-
-    const response = await fetch(cartoonifyUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Cartoonify API failed: ${response.status}`);
-    }
-
-    const blob = await response.blob();
-    
-    if (debugMode) {
-      console.log('✅ Cartoonify API response received');
-      console.log('📊 Response size:', blob.size, 'bytes');
-    }
-
-    // Upload to Cloudinary
-    const arrayBuffer = await blob.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    
-    const uploadResult = await new Promise<{ secure_url: string }>((resolve, reject) => {
-      cloudinary.uploader.upload_stream(
-        {
-          resource_type: 'image',
-          folder: 'cartoonify',
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else if (result) resolve(result as { secure_url: string });
-          else reject(new Error('No result from Cloudinary'));
+      if (result.success && result.imageUrl) {
+        if (debugMode) {
+          console.log('✅ Gemini cartoonify successful');
+          console.log('⏱️ Processing time:', result.processingTime, 'ms');
         }
-      ).end(buffer);
-    });
-
-    if (debugMode) {
-      console.log('☁️ Cloudinary upload complete');
-      console.log('🌐 Cloudinary URL:', uploadResult.secure_url);
+        return result.imageUrl;
+      }
     }
 
-    return uploadResult.secure_url;
+    // Enhanced Cloudinary transformation with visible effects
+    const enhancedCartoonUrl = imageUrl.replace(
+      '/upload/',
+      '/upload/e_cartoonify:80:100/e_saturation:180/e_contrast:150/e_vibrance:50/e_brightness:10/'
+    );
+
+    if (debugMode) {
+      console.log('🎭 Enhanced Cloudinary cartoonify URL:', enhancedCartoonUrl);
+    }
+
+    return enhancedCartoonUrl;
+
   } catch (error) {
     console.error('❌ Cartoonify error:', error);
     
@@ -367,7 +332,13 @@ export async function cartoonifyImage(imageUrl: string, debugMode: boolean = fal
       console.error('Error stack:', error.stack);
     }
     
-    throw error;
+    // Final fallback with guaranteed visible changes
+    const finalFallback = imageUrl.replace(
+      '/upload/',
+      '/upload/e_cartoonify:100:100/e_saturation:200/e_contrast:200/e_brightness:20/'
+    );
+    
+    return finalFallback;
   }
 }
 
@@ -375,34 +346,38 @@ export async function cartoonifyImage(imageUrl: string, debugMode: boolean = fal
 export async function testCartoonifyAPI(debugMode: boolean = false) {
   try {
     if (debugMode) {
-      console.log('🔍 Testing cartoonify API connection...');
+      console.log('🔍 Testing Gemini API connection...');
     }
+
+    // Test Gemini API connection
+    const geminiTest = await GeminiService.testConnection(debugMode);
     
-    const testUrl = 'https://cartoonify-api.herokuapp.com/cartoonify?url=https://via.placeholder.com/300x300.png';
-    
-    const response = await fetch(testUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    
+    const results = [
+      {
+        endpoint: 'Gemini API',
+        success: geminiTest.success,
+        status: geminiTest.success ? 200 : 500,
+        statusText: geminiTest.message
+      }
+    ];
+
     if (debugMode) {
-      console.log('📊 API Response Status:', response.status);
-      console.log('📊 API Response OK:', response.ok);
+      console.log(`📊 Gemini API: ${geminiTest.success ? '✅ Connected' : '❌ Failed'}`);
     }
-    
+
     return {
-      success: response.ok,
-      status: response.status,
-      statusText: response.statusText
+      results,
+      fallbackAvailable: true,
+      cloudinaryEffects: true,
+      geminiAvailable: geminiTest.success
     };
   } catch (error) {
-    console.error('❌ API Test Error:', error);
+    console.error('❌ Gemini API Test Error:', error);
     return {
-      success: false,
-      status: 0,
-      statusText: error instanceof Error ? error.message : 'Unknown error'
+      results: [],
+      fallbackAvailable: true,
+      cloudinaryEffects: true,
+      geminiAvailable: false
     };
   }
 }

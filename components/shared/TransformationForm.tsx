@@ -28,10 +28,10 @@ import { useRouter } from "next/navigation"
 import { getCldImageUrl } from "next-cloudinary"
 import TransformedImage from "./TransformedImage"
 import MediaUploader from "./MediaUploader"
-import { addImage, updateImage } from "@/lib/actions/image.actions"
+import { addImage, updateImage, cartoonifyImage, testCartoonifyAPI } from "@/lib/actions/image.actions"
 import { updateCredits } from "@/lib/actions/user.actions"
 import { InsufficientCreditsModal } from "./InsufficientCreditsModal"
-import { Loader2 } from "lucide-react"
+import { Loader2, Bug, Wifi, WifiOff } from "lucide-react"
 
 // Type definitions
 type Transformations = {
@@ -39,7 +39,7 @@ type Transformations = {
     prompt?: string;
     to?: string;
     [key: string]: any;
-  };
+  } | boolean;
 };
 
 type TransformationFormProps = {
@@ -51,7 +51,7 @@ type TransformationFormProps = {
   config?: Transformations | null;
 };
 
-export const formSchema = z.object({
+const formSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title must be 100 characters or less"),
   aspectRatio: z.string().optional(),
   color: z.string().optional(),
@@ -75,6 +75,10 @@ const TransformationForm = ({
   const [transformationConfig, setTransformationConfig] = useState<Transformations | null>(config)
   const [isPending, startTransition] = useTransition()
   const [showProModal, setShowProModal] = useState(false);
+  const [debugMode, setDebugMode] = useState(false);
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
+  const [apiStatus, setApiStatus] = useState<'unknown' | 'connected' | 'failed'>('unknown');
+  const [isTestingAPI, setIsTestingAPI] = useState(false);
   const router = useRouter()
   
   // Check if generative fill is locked (less than 11 coins)
@@ -92,13 +96,49 @@ const TransformationForm = ({
     resolver: zodResolver(formSchema),
     defaultValues: initialValues,
   })
- 
+
+  // Test API connection when debug mode is enabled
+  useEffect(() => {
+    if (debugMode && type === 'cartoonify') {
+      testAPIConnection();
+    }
+  }, [debugMode, type]);
+
+  const testAPIConnection = async () => {
+    if (type !== 'cartoonify') return;
+    
+    setIsTestingAPI(true);
+    addDebugLog('🔍 Testing cartoonify API connection...');
+    
+    try {
+      const result = await testCartoonifyAPI(true);
+      addDebugLog(`📊 API Status: ${result.status} - ${result.statusText}`);
+      
+      if (result.success) {
+        setApiStatus('connected');
+        addDebugLog('✅ API connection successful');
+      } else {
+        setApiStatus('failed');
+        addDebugLog('❌ API connection failed');
+      }
+    } catch (error) {
+      setApiStatus('failed');
+      addDebugLog(`❌ API test error: ${error}`);
+    } finally {
+      setIsTestingAPI(false);
+    }
+  };
+
+  const addDebugLog = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setDebugLogs(prev => [...prev, `[${timestamp}] ${message}`]);
+  };
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
-    console.log('Submitting form with values:', values);
-    console.log('Current image state:', image);
-    console.log('Transformation config:', transformationConfig);
-    
+    addDebugLog('📝 Submitting form with values: ' + JSON.stringify(values));
+    addDebugLog('📸 Current image state: ' + JSON.stringify(image ? { ...image, secureURL: image?.secureURL?.substring(0, 50) + '...' } : null));
+    addDebugLog('⚙️ Transformation config: ' + JSON.stringify(transformationConfig));
 
     if(data || image) {
       const baseOptions = {
@@ -114,36 +154,42 @@ const TransformationForm = ({
           ...baseOptions,
           effects: [{
             recolor: {
-              prompt: transformationConfig.recolor.prompt || '',
-              to: transformationConfig.recolor.to || '#ffffff'
+              prompt: typeof transformationConfig.recolor === 'object' && transformationConfig.recolor.prompt ? transformationConfig.recolor.prompt : '',
+              to: typeof transformationConfig.recolor === 'object' && transformationConfig.recolor.to ? transformationConfig.recolor.to : '#ffffff'
             },
             colorize: '100'
           }]
         };
         transformationUrl = getCldImageUrl(recolorOptions);
-        console.log('Recolor transformation URL:', transformationUrl);
+        addDebugLog('🎨 Recolor transformation URL: ' + transformationUrl);
       } else {
         transformationUrl = getCldImageUrl(baseOptions);
       }
 
-      const imageData = {
+      const imageData: any = {
         title: values.title,
         publicId: image?.publicId,
         transformationType: type,
         width: image?.width,
         height: image?.height,
-        config: transformationConfig,
         secureUrl: image?.secureURL,
         transformationURL: transformationUrl,
         aspectRatio: values.aspectRatio,
         prompt: values.prompt,
         color: values.color,
+      };
+
+      addDebugLog("📋 Image Data Before Adding: " + JSON.stringify(imageData));
+
+      if (type === 'cartoonify') {
+        imageData.config = { cartoonify: { enabled: true } };
       }
-      console.log("Image Data:", imageData); // Log image data
-      console.log("Transformation Config:", transformationConfig); // Log transformation config
+
+      addDebugLog("📋 Final Image Data: " + JSON.stringify(imageData));
 
       if(action === 'Add') {
         try {
+          addDebugLog('🚀 Starting addImage process...');
           const newImage = await addImage({
             image: imageData,
             userId,
@@ -151,18 +197,20 @@ const TransformationForm = ({
           })
 
           if(newImage) {
+            addDebugLog('✅ Image added successfully');
             form.reset()
             setImage(data)
             router.push('/')
           }
         } catch (error) {
+          addDebugLog('❌ Error adding image: ' + error);
           console.log(error);
         }
       }
-      
 
       if(action === 'Update') {
         try {
+          addDebugLog('🚀 Starting updateImage process...');
           const updatedImage = await updateImage({
             image: {
               ...imageData,
@@ -173,14 +221,15 @@ const TransformationForm = ({
           })
 
           if(updatedImage) {
+            addDebugLog('✅ Image updated successfully');
             router.push('/')
           }
         } catch (error) {
+          addDebugLog('❌ Error updating image: ' + error);
           console.log(error);
         }
       }
     }
-    
 
     setIsSubmitting(false)
   }
@@ -226,8 +275,27 @@ const TransformationForm = ({
 
   const onTransformHandler = async () => {
     setIsTransforming(true);
+    addDebugLog('🔄 Starting transformation...');
+    
     try {
-      if (newTransformation) {
+      if (type === 'cartoonify' && image?.secureURL) {
+        addDebugLog('🎨 Processing cartoonify transformation...');
+        addDebugLog('📸 Original image URL: ' + image.secureURL);
+
+        const cartoonifiedUrl = await cartoonifyImage(image.secureURL, debugMode);
+        
+        addDebugLog('✅ Cartoonify transformation complete');
+        addDebugLog('🌐 New cartoonified URL: ' + cartoonifiedUrl);
+
+        // Update image with cartoonified version
+        setImage((prev: any) => ({
+          ...prev,
+          secureURL: cartoonifiedUrl,
+          transformationURL: cartoonifiedUrl
+        }));
+
+        setTransformationConfig({ cartoonify: { enabled: true } });
+      } else if (newTransformation) {
         setTransformationConfig(
           deepMergeObjects(newTransformation, transformationConfig || {})
         )
@@ -236,6 +304,13 @@ const TransformationForm = ({
       setNewTransformation(null)
 
       await updateCredits(userId, creditFee)
+      addDebugLog('💳 Credits updated successfully');
+    } catch (error) {
+      console.error('Transform error:', error);
+      addDebugLog('❌ Transform error: ' + error);
+      if (debugMode) {
+        setDebugLogs(prev => [...prev, `❌ Error: ${error}`]);
+      }
     } finally {
       setIsTransforming(false);
     }
@@ -250,7 +325,7 @@ const TransformationForm = ({
   }, [data, action, transformationType.config]);
 
   useEffect(() => {
-    if(image && (type === 'restore' || type === 'removeBackground')) {
+    if(image && (type === 'restore' || type === 'removeBackground' || type === 'cartoonify')) {
       setNewTransformation(transformationType.config as unknown as Transformations)
     }
   }, [image, transformationType.config, type])
@@ -401,6 +476,7 @@ const TransformationForm = ({
               />
             )}
           />
+        </div>
 
           {isGenerativeFillLocked ? (
             <div className="flex flex-col items-center justify-center h-[450px] w-full rounded-[10px] border border-dashed bg-gray-100">
@@ -425,9 +501,51 @@ const TransformationForm = ({
               transformationConfig={transformationConfig || {}}
             />
           )}
-        </div>
-
+        {/* Removed extra closing div to fix unclosed form error */}
         <div className="flex flex-col gap-4">
+          {type === 'cartoonify' && (
+            <div className="flex items-center gap-2">
+              <Button 
+                type="button"
+                variant={debugMode ? "destructive" : "outline"}
+                onClick={() => setDebugMode(!debugMode)}
+                className="text-sm flex items-center gap-2"
+              >
+                <Bug className="w-4 h-4" />
+                {debugMode ? 'Disable Debug' : 'Enable Debug'}
+              </Button>
+              
+              {debugMode && (
+                <Button 
+                  type="button"
+                  variant="outline"
+                  onClick={testAPIConnection}
+                  disabled={isTestingAPI}
+                  className="text-sm flex items-center gap-2"
+                >
+                  {isTestingAPI ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : apiStatus === 'connected' ? (
+                    <Wifi className="w-4 h-4 text-green-500" />
+                  ) : apiStatus === 'failed' ? (
+                    <WifiOff className="w-4 h-4 text-red-500" />
+                  ) : null}
+                  Test API
+                </Button>
+              )}
+              
+              {debugMode && (
+                <span className={`text-xs px-2 py-1 rounded ${
+                  apiStatus === 'connected' ? 'bg-green-100 text-green-800' :
+                  apiStatus === 'failed' ? 'bg-red-100 text-red-800' :
+                  'bg-gray-100 text-gray-800'
+                }`}>
+                  API: {apiStatus}
+                </span>
+              )}
+            </div>
+          )}
+          
           <Button 
             type="button"
             className="submit-button capitalize"
@@ -444,6 +562,31 @@ const TransformationForm = ({
             {isSubmitting ? 'Submitting...' : 'Save Image'}
           </Button>
         </div>
+
+        {debugMode && debugLogs.length > 0 && (
+          <div className="bg-gray-100 p-4 rounded-lg max-h-64 overflow-y-auto">
+            <h4 className="font-semibold mb-2 flex items-center gap-2">
+              <Bug className="w-4 h-4" />
+              Debug Logs:
+            </h4>
+            <div className="text-xs font-mono space-y-1">
+              {debugLogs.map((log, index) => (
+                <div key={index} className="p-1 bg-white rounded text-xs">
+                  {log}
+                </div>
+              ))}
+            </div>
+            <Button 
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setDebugLogs([])}
+              className="mt-2 text-xs"
+            >
+              Clear Logs
+            </Button>
+          </div>
+        )}
       </form>
     </Form>
   )

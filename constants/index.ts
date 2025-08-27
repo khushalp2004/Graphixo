@@ -15,11 +15,6 @@ export const navLinks = [
       icon: "/assets/icons/stars.svg",
     },
     {
-      label: "Object Remove",
-      route: "/transformations/add/remove",
-      icon: "/assets/icons/scan.svg",
-    },
-    {
       label: "Object Recolor",
       route: "/transformations/add/recolor",
       icon: "/assets/icons/filter.svg",
@@ -30,8 +25,8 @@ export const navLinks = [
       icon: "/assets/icons/camera.svg",
     },
     {
-      label: "Background Remove",
-      route: "/transformations/add/objectRecolor",
+      label: "Cartoonify",
+      route: "/transformations/add/cartoonify",
       icon: "/assets/icons/filter.svg",
     },
     {
@@ -140,6 +135,13 @@ export const navLinks = [
       subTitle: "Removes the background of the image using AI",
       config: { removeBackground: true },
       icon: "camera.svg",
+    },
+    cartoonify: {
+      type: "cartoonify",
+      title: "Cartoonify Image",
+      subTitle: "Transform your image into a cartoon style using AI",
+      config: { cartoonify: true },
+      icon: "filter.svg",
     },
     fill: {
       type: "fill",

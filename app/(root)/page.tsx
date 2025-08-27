@@ -56,11 +56,11 @@ const Home = async ({ searchParams }: SearchPageProps) => {
           </ul>
         </section>
         {/* Image Slider Carousel (Now using the Client Component) */}
-        {/* <div style={{ maxWidth: '800px', margin: '20px auto' }}> */}
+        <div style={{ maxWidth: '800px', margin: '20px auto' }}>
         <DynamicSlider />
         <hr />
         <Footer />
-      {/* </div> */}
+      </div>
       </>
     );
   }
