@@ -64,15 +64,9 @@ type TransformationFormProps = {
   config?: Transformations | null;
 };
 
-// const createFormSchema = (type: string) => z.object({
-//   title: z.string().min(1, "Title is required").max(100, "Title must be 100 characters or less"),
-//   aspectRatio: z.string().optional(),
-//   color: z.string().optional(),
-//   prompt: z.string().min(1, "Prompt is required for text-to-image generation"),
-//   publicId: type === 'texttoimage' ? z.string().optional() : z.string().min(1, "Image is required"),
-// });
 
-const createFormSchema = (type: string) => {
+
+export const createFormSchema = (type: string) => {
   return z.object({
     title: z
       .string()
