@@ -38,4 +38,4 @@ const AddTransformationTypePage = async ({ params }: { params: Promise<{ type: s
   )
 }
 
-export default AddTransformationTypePage
+export default AddTransformationTypePage;
