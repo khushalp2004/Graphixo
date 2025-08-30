@@ -93,7 +93,8 @@ export type TransformationTypeKey =
   | "fill"
   | "remove"
   | "recolor"
-  | "removeBackground";
+  | "removeBackground"
+  | "texttoimage";
 
 // ====== URL QUERY PARAMS
 export type FormUrlQueryParams = {

@@ -286,21 +286,21 @@ export async function getUserImages({
 }
 
 // **CARTOONIFY IMAGE TRANSFORMATION**
-export async function cartoonifyImage(imageUrl: string, debugMode: boolean = false) {
+export async function textToImage(imageUrl: string, debugMode: boolean = false) {
   try {
     if (debugMode) {
-      console.log('🎨 Starting cartoonify transformation...');
+      console.log('🎨 Starting text-to-image transformation...');
       console.log('📸 Original image URL:', imageUrl);
     }
 
     // Check if we're in development mode and provide fallback
     if (process.env.NODE_ENV === 'development') {
-      console.log('🚀 Development mode detected - using mock cartoonify');
+      console.log('🚀 Development mode detected - using mock text-to-image');
       
       // In development, return the original image with a slight modification
       // This allows testing without the external API
       if (debugMode) {
-        console.log('🎭 Using mock cartoonify for development');
+        console.log('🎭 Using mock text-to-image for development');
       }
       
       // For now, return original image URL for testing
@@ -308,14 +308,14 @@ export async function cartoonifyImage(imageUrl: string, debugMode: boolean = fal
       return imageUrl;
     }
 
-    // Using free cartoonify API
-    const cartoonifyUrl = `https://cartoonify-api.herokuapp.com/cartoonify?url=${encodeURIComponent(imageUrl)}`;
+    // Using free text-to-image API
+    const textToImageUrl = `https://cartoonify-api.herokuapp.com/cartoonify?url=${encodeURIComponent(imageUrl)}`;
     
     if (debugMode) {
-      console.log('🔗 API URL:', cartoonifyUrl);
+      console.log('🔗 API URL:', textToImageUrl);
     }
 
-    const response = await fetch(cartoonifyUrl, {
+    const response = await fetch(textToImageUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -323,13 +323,13 @@ export async function cartoonifyImage(imageUrl: string, debugMode: boolean = fal
     });
     
     if (!response.ok) {
-      throw new Error(`Cartoonify API failed: ${response.status}`);
+      throw new Error(`Text-to-image API failed: ${response.status}`);
     }
 
     const blob = await response.blob();
     
     if (debugMode) {
-      console.log('✅ Cartoonify API response received');
+      console.log('✅ Text-to-image API response received');
       console.log('📊 Response size:', blob.size, 'bytes');
     }
 
@@ -358,7 +358,7 @@ export async function cartoonifyImage(imageUrl: string, debugMode: boolean = fal
 
     return uploadResult.secure_url;
   } catch (error) {
-    console.error('❌ Cartoonify error:', error);
+    console.error('❌ Text-to-image error:', error);
     
     // Enhanced error information
     if (error instanceof Error) {

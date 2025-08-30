@@ -25,8 +25,8 @@ export const navLinks = [
       icon: "/assets/icons/camera.svg",
     },
     {
-      label: "Cartoonify",
-      route: "/transformations/add/cartoonify",
+      label: "Text to Image",
+      route: "/transformations/add/texttoimage",
       icon: "/assets/icons/filter.svg",
     },
     {
@@ -136,11 +136,11 @@ export const navLinks = [
       config: { removeBackground: true },
       icon: "camera.svg",
     },
-    cartoonify: {
-      type: "cartoonify",
-      title: "Cartoonify Image",
-      subTitle: "Transform your image into a cartoon style using AI",
-      config: { cartoonify: true },
+    texttoimage: {
+      type: "texttoimage",
+      title: "Text to Image",
+      subTitle: "Transform your text prompt into an image using AI",
+      config: { textToImage: true },
       icon: "filter.svg",
     },
     fill: {

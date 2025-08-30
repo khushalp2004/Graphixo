@@ -14,8 +14,8 @@ export function cn(...inputs: ClassValue[]) {
 export const handleError = (error: unknown) => {
   if (error instanceof Error) {
     // This is a native JavaScript error (e.g., TypeError, RangeError)
-    // console.error(error.message);
-    // throw new Error(`Error: ${error.message}`);
+    console.error(error.message);
+    throw new Error(`Error: ${error.message}`);
   } else if (typeof error === "string") {
     // This is a string error message
     console.error(error);
@@ -188,4 +188,49 @@ export const deepMergeObjects = <T extends UnknownObject, U extends UnknownObjec
   }
 
   return output;
+};
+
+// CLOUDINARY UPLOAD UTILITY
+export interface CloudinaryUploadResult {
+  success: boolean;
+  publicId?: string;
+  secureUrl?: string;
+  error?: string;
+}
+
+export const uploadToCloudinary = async (base64Image: string, folder: string = 'clipdrop'): Promise<CloudinaryUploadResult> => {
+  try {
+    // Remove data URL prefix if present
+    const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+    
+    const formData = new FormData();
+    formData.append('file', `data:image/png;base64,${base64Data}`);
+    formData.append('upload_preset', process.env.CLOUDINARY_UPLOAD_PRESET || 'ml_default');
+    formData.append('folder', folder);
+
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        success: true,
+        publicId: data.public_id,
+        secureUrl: data.secure_url
+      };
+    } else {
+      const error = await response.text();
+      return {
+        success: false,
+        error: `Cloudinary upload failed: ${response.status} - ${error}`
+      };
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error during Cloudinary upload'
+    };
+  }
 };

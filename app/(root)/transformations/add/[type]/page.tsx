@@ -6,12 +6,16 @@ import { TransformationTypeKey } from '@/types';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
-const AddTransformationTypePage = async ({ params }: { params: Promise<{ type: keyof typeof transformationTypes }> }) => {
+const AddTransformationTypePage = async ({ params }: { params: Promise<{ type: string }> }) => {
   const { type } = await params;
   const { userId } = await auth();
-  const transformation = transformationTypes[type] as unknown as { title: string; subTitle: string; type: string };
+  
+  // Handle case where type might be "textToImage" instead of "texttoimage"
+  const normalizedType = type === 'textToImage' ? 'texttoimage' : type;
+  const transformation = transformationTypes[normalizedType as keyof typeof transformationTypes] as unknown as { title: string; subTitle: string; type: string };
 
-  if(!userId) redirect('/sign-in')
+  if (!userId) redirect('/sign-in');
+  if (!transformation) redirect('/transformations/add/restore'); // Redirect to default if invalid type
 
   const user = await getUserById(userId);
 

@@ -8,7 +8,7 @@ import Image from "../database/models/image.model";
 import { redirect } from "next/navigation";
 import { v2 as cloudinary } from "cloudinary";
 import { AddImageParams, UpdateImageParams } from "@/types";
-import GeminiService from "../services/clipdrop.service";
+import { ClipDropService } from "../services/clipdrop.service";
 
 // 🔹 Setup Cloudinary Once
 cloudinary.config({
@@ -287,10 +287,10 @@ export async function getUserImages({
 }
 
 // **CARTOONIFY IMAGE TRANSFORMATION**
-export async function cartoonifyImage(imageUrl: string, debugMode: boolean = false) {
+export async function textToImage(imageUrl: string, debugMode: boolean = false) {
   try {
     if (debugMode) {
-      console.log('🎨 Starting enhanced cartoonify transformation...');
+      console.log('🎨 Starting enhanced text-to-image transformation...');
       console.log('📸 Original image URL:', imageUrl);
     }
 
@@ -298,13 +298,13 @@ export async function cartoonifyImage(imageUrl: string, debugMode: boolean = fal
     const useRealTransformation = true;
     
     if (useRealTransformation) {
-      // Use Gemini API for actual transformation
-      const result = await GeminiService.cartoonifyImage(imageUrl, debugMode);
+      // Use ClipDrop API for actual transformation
+      const service = ClipDropService.getInstance();
+      const result = await service.textToImage("Cartoon style: " + imageUrl, false);
       
       if (result.success && result.imageUrl) {
         if (debugMode) {
-          console.log('✅ Gemini cartoonify successful');
-          console.log('⏱️ Processing time:', result.processingTime, 'ms');
+          console.log('✅ ClipDrop text-to-image successful');
         }
         return result.imageUrl;
       }
@@ -317,13 +317,13 @@ export async function cartoonifyImage(imageUrl: string, debugMode: boolean = fal
     );
 
     if (debugMode) {
-      console.log('🎭 Enhanced Cloudinary cartoonify URL:', enhancedCartoonUrl);
+      console.log('🎭 Enhanced Cloudinary text-to-image URL:', enhancedCartoonUrl);
     }
 
     return enhancedCartoonUrl;
 
   } catch (error) {
-    console.error('❌ Cartoonify error:', error);
+    console.error('❌ Text-to-image error:', error);
     
     // Enhanced error information
     if (error instanceof Error) {
@@ -346,30 +346,31 @@ export async function cartoonifyImage(imageUrl: string, debugMode: boolean = fal
 export async function testCartoonifyAPI(debugMode: boolean = false) {
   try {
     if (debugMode) {
-      console.log('🔍 Testing Gemini API connection...');
+      console.log('🔍 Testing text-to-image API connection...');
     }
 
-    // Test Gemini API connection
-    const geminiTest = await GeminiService.testConnection(debugMode);
+    // Test ClipDrop API connection
+    const service = ClipDropService.getInstance();
+    const clipdropTest = await service.textToImage("test connection", false);
     
     const results = [
       {
-        endpoint: 'Gemini API',
-        success: geminiTest.success,
-        status: geminiTest.success ? 200 : 500,
-        statusText: geminiTest.message
+        endpoint: 'ClipDrop API',
+        success: clipdropTest.success,
+        status: clipdropTest.success ? 200 : 500,
+        statusText: clipdropTest.error || 'Connected'
       }
     ];
 
     if (debugMode) {
-      console.log(`📊 Gemini API: ${geminiTest.success ? '✅ Connected' : '❌ Failed'}`);
+      console.log(`📊 ClipDrop API: ${clipdropTest.success ? '✅ Connected' : '❌ Failed'}`);
     }
 
     return {
       results,
       fallbackAvailable: true,
       cloudinaryEffects: true,
-      geminiAvailable: geminiTest.success
+      clipdropAvailable: clipdropTest.success
     };
   } catch (error) {
     console.error('❌ Gemini API Test Error:', error);

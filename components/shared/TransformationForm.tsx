@@ -28,10 +28,11 @@ import { useRouter } from "next/navigation"
 import { getCldImageUrl } from "next-cloudinary"
 import TransformedImage from "./TransformedImage"
 import MediaUploader from "./MediaUploader"
-import { addImage, updateImage, cartoonifyImage, testCartoonifyAPI } from "@/lib/actions/image.actions"
+import { addImage, updateImage, textToImage, testCartoonifyAPI } from "@/lib/actions/image.actions.new"
 import { updateCredits } from "@/lib/actions/user.actions"
 import { InsufficientCreditsModal } from "./InsufficientCreditsModal"
 import { Loader2, Bug, Wifi, WifiOff } from "lucide-react"
+import { ClipDropService } from "@/lib/services/clipdrop.service"
 
 // Type definitions
 type Transformations = {
@@ -51,13 +52,13 @@ type TransformationFormProps = {
   config?: Transformations | null;
 };
 
-const formSchema = z.object({
+const createFormSchema = (type: string) => z.object({
   title: z.string().min(1, "Title is required").max(100, "Title must be 100 characters or less"),
   aspectRatio: z.string().optional(),
   color: z.string().optional(),
-  prompt: z.string().optional(),
-  publicId: z.string().min(1, "Image is required"),
-})
+  prompt: z.string().min(1, "Prompt is required for text-to-image generation"),
+  publicId: type === 'texttoimage' ? z.string().optional() : z.string().min(1, "Image is required"),
+});
 
 const TransformationForm = ({ 
   action, 
@@ -79,10 +80,19 @@ const TransformationForm = ({
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
   const [apiStatus, setApiStatus] = useState<'unknown' | 'connected' | 'failed'>('unknown');
   const [isTestingAPI, setIsTestingAPI] = useState(false);
+  const [transformationProgress, setTransformationProgress] = useState(0);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
   const router = useRouter()
   
-  // Check if generative fill is locked (less than 11 coins)
+  // Check if generative fill is locked (less than 11 coins) - only for fill type
   const isGenerativeFillLocked = type === 'fill' && creditBalance < 11;
+  
+  // For text-to-image, we don't need aspect ratio or color fields
+  const showAspectRatio = type === 'fill';
+  const showColorField = type === 'recolor';
+  const showPromptField = type === 'remove' || type === 'recolor' || type === 'texttoimage';
 
   const initialValues = data && action === 'Update' ? {
     title: data?.title,
@@ -92,34 +102,42 @@ const TransformationForm = ({
     publicId: data?.publicId,
   } : defaultValues
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<ReturnType<typeof createFormSchema>>>({
+    resolver: zodResolver(createFormSchema(type)),
     defaultValues: initialValues,
   })
 
   // Test API connection when debug mode is enabled
   useEffect(() => {
-    if (debugMode && type === 'cartoonify') {
+    if (debugMode && type === 'texttoimage') {
       testAPIConnection();
     }
   }, [debugMode, type]);
 
   const testAPIConnection = async () => {
-    if (type !== 'cartoonify') return;
+    if (type !== 'texttoimage') return;
     
     setIsTestingAPI(true);
-    addDebugLog('🔍 Testing cartoonify API connection...');
+    addDebugLog('🔍 Testing text-to-image API connection...');
     
     try {
       const result = await testCartoonifyAPI(true);
-      addDebugLog(`📊 API Status: ${result.status} - ${result.statusText}`);
       
-      if (result.success) {
-        setApiStatus('connected');
-        addDebugLog('✅ API connection successful');
+      // Check ClipDrop API status from results array
+      const clipdropResult = result.results.find(r => r.endpoint === 'ClipDrop API');
+      if (clipdropResult) {
+        addDebugLog(`📊 ClipDrop API Status: ${clipdropResult.status} - ${clipdropResult.statusText}`);
+        
+        if (clipdropResult.success) {
+          setApiStatus('connected');
+          addDebugLog('✅ API connection successful');
+        } else {
+          setApiStatus('failed');
+          addDebugLog('❌ API connection failed');
+        }
       } else {
         setApiStatus('failed');
-        addDebugLog('❌ API connection failed');
+        addDebugLog('❌ No API results found');
       }
     } catch (error) {
       setApiStatus('failed');
@@ -134,104 +152,171 @@ const TransformationForm = ({
     setDebugLogs(prev => [...prev, `[${timestamp}] ${message}`]);
   };
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const showSuccess = (message: string) => {
+    setToastMessage(message);
+    setShowSuccessToast(true);
+    setTimeout(() => setShowSuccessToast(false), 3000);
+  };
+
+  const showError = (message: string) => {
+    setToastMessage(message);
+    setShowErrorToast(true);
+    setTimeout(() => setShowErrorToast(false), 5000);
+  };
+
+  async function onSubmit(values: z.infer<ReturnType<typeof createFormSchema>>) {
     setIsSubmitting(true);
     addDebugLog('📝 Submitting form with values: ' + JSON.stringify(values));
     addDebugLog('📸 Current image state: ' + JSON.stringify(image ? { ...image, secureURL: image?.secureURL?.substring(0, 50) + '...' } : null));
     addDebugLog('⚙️ Transformation config: ' + JSON.stringify(transformationConfig));
 
-    if(data || image) {
-      const baseOptions = {
-        width: image?.width,
-        height: image?.height,
-        src: image?.publicId,
-        ...transformationConfig
-      };
+    try {
+      let imageToSave = image;
+      
+      // For text-to-image, generate the image first if it doesn't exist
+      if (type === 'texttoimage' && !image && values.prompt) {
+        addDebugLog('🎨 Generating image from text prompt during save...');
+        const response = await fetch('/api/clipdrop/text-to-image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ prompt: values.prompt }),
+        });
 
-      let transformationUrl;
-      if (type === 'recolor' && transformationConfig?.recolor) {
-        const recolorOptions = {
-          ...baseOptions,
-          effects: [{
-            recolor: {
-              prompt: typeof transformationConfig.recolor === 'object' && transformationConfig.recolor.prompt ? transformationConfig.recolor.prompt : '',
-              to: typeof transformationConfig.recolor === 'object' && transformationConfig.recolor.to ? transformationConfig.recolor.to : '#ffffff'
-            },
-            colorize: '100'
-          }]
+        const result = await response.json();
+        
+        if (result.success) {
+          imageToSave = {
+            publicId: result.publicId || `clipdrop-${Date.now()}`,
+            secureURL: result.secureUrl || result.imageUrl,
+            width: result.width || 1024,
+            height: result.height || 1024,
+            transformationURL: result.secureUrl || result.imageUrl
+          };
+          addDebugLog('✅ Image generated successfully during save');
+        } else {
+          throw new Error(result.error || 'Image generation failed during save');
+        }
+      }
+
+      if(data || imageToSave || (type === 'texttoimage' && values.prompt)) {
+        const baseOptions = {
+          width: imageToSave?.width,
+          height: imageToSave?.height,
+          src: imageToSave?.publicId,
+          ...transformationConfig
         };
-        transformationUrl = getCldImageUrl(recolorOptions);
-        addDebugLog('🎨 Recolor transformation URL: ' + transformationUrl);
+
+        let transformationUrl;
+        if (type === 'recolor' && transformationConfig?.recolor) {
+          const recolorOptions = {
+            ...baseOptions,
+            effects: [{
+              recolor: {
+                prompt: typeof transformationConfig.recolor === 'object' && transformationConfig.recolor.prompt ? transformationConfig.recolor.prompt : '',
+                to: typeof transformationConfig.recolor === 'object' && transformationConfig.recolor.to ? transformationConfig.recolor.to : '#ffffff'
+              },
+              colorize: '100'
+            }]
+          };
+          transformationUrl = getCldImageUrl(recolorOptions);
+          addDebugLog('🎨 Recolor transformation URL: ' + transformationUrl);
+        } else {
+          transformationUrl = getCldImageUrl(baseOptions);
+        }
+
+        const imageData: any = {
+          title: values.title,
+          publicId: imageToSave?.publicId,
+          transformationType: type,
+          width: imageToSave?.width,
+          height: imageToSave?.height,
+          secureUrl: imageToSave?.secureURL,
+          transformationURL: transformationUrl,
+          aspectRatio: values.aspectRatio,
+          prompt: values.prompt,
+          color: values.color,
+        };
+
+        addDebugLog("📋 Image Data Before Adding: " + JSON.stringify(imageData));
+
+        // Set the appropriate config based on transformation type
+        if (type === 'texttoimage') {
+          imageData.config = { textToImage: { enabled: true } };
+        } else if (type === 'restore') {
+          imageData.config = { restore: true };
+        } else if (type === 'removeBackground') {
+          imageData.config = { removeBackground: true };
+        } else if (type === 'fill') {
+          imageData.config = { fillBackground: true };
+        } else if (type === 'remove') {
+          imageData.config = {
+            remove: { prompt: values.prompt || "", removeShadow: true, multiple: true }
+          };
+        } else if (type === 'recolor') {
+          imageData.config = {
+            recolor: { prompt: values.prompt || "", to: values.color || "#ffffff", multiple: true }
+          };
+        } else {
+          // Fallback to transformationConfig if available
+          imageData.config = transformationConfig || {};
+        }
+
+        addDebugLog("📋 Final Image Data: " + JSON.stringify(imageData));
+
+        if(action === 'Add') {
+          try {
+            addDebugLog('🚀 Starting addImage process...');
+            const newImage = await addImage({
+              image: imageData,
+              userId,
+              path: '/'
+            })
+
+            if(newImage) {
+              addDebugLog('✅ Image added successfully');
+              form.reset()
+              setImage(data)
+              router.push('/')
+            }
+          } catch (error) {
+            addDebugLog('❌ Error adding image: ' + error);
+            console.log(error);
+          }
+        }
+
+        if(action === 'Update') {
+          try {
+            addDebugLog('🚀 Starting updateImage process...');
+            const updatedImage = await updateImage({
+              image: {
+                ...imageData,
+                _id: data._id
+              },
+              userId,
+              path: `/transformations/${data._id}`
+            })
+
+            if(updatedImage) {
+              addDebugLog('✅ Image updated successfully');
+              router.push('/')
+            }
+          } catch (error) {
+            addDebugLog('❌ Error updating image: ' + error);
+            console.log(error);
+          }
+        }
       } else {
-        transformationUrl = getCldImageUrl(baseOptions);
+        addDebugLog('❌ No image data available for saving');
+        showError('Please generate an image first or provide image data');
       }
-
-      const imageData: any = {
-        title: values.title,
-        publicId: image?.publicId,
-        transformationType: type,
-        width: image?.width,
-        height: image?.height,
-        secureUrl: image?.secureURL,
-        transformationURL: transformationUrl,
-        aspectRatio: values.aspectRatio,
-        prompt: values.prompt,
-        color: values.color,
-      };
-
-      addDebugLog("📋 Image Data Before Adding: " + JSON.stringify(imageData));
-
-      if (type === 'cartoonify') {
-        imageData.config = { cartoonify: { enabled: true } };
-      }
-
-      addDebugLog("📋 Final Image Data: " + JSON.stringify(imageData));
-
-      if(action === 'Add') {
-        try {
-          addDebugLog('🚀 Starting addImage process...');
-          const newImage = await addImage({
-            image: imageData,
-            userId,
-            path: '/'
-          })
-
-          if(newImage) {
-            addDebugLog('✅ Image added successfully');
-            form.reset()
-            setImage(data)
-            router.push('/')
-          }
-        } catch (error) {
-          addDebugLog('❌ Error adding image: ' + error);
-          console.log(error);
-        }
-      }
-
-      if(action === 'Update') {
-        try {
-          addDebugLog('🚀 Starting updateImage process...');
-          const updatedImage = await updateImage({
-            image: {
-              ...imageData,
-              _id: data._id
-            },
-            userId,
-            path: `/transformations/${data._id}`
-          })
-
-          if(updatedImage) {
-            addDebugLog('✅ Image updated successfully');
-            router.push('/')
-          }
-        } catch (error) {
-          addDebugLog('❌ Error updating image: ' + error);
-          console.log(error);
-        }
-      }
+    } catch (error) {
+      addDebugLog('❌ Error in onSubmit: ' + error);
+      showError(error instanceof Error ? error.message : 'Failed to save image');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false)
   }
 
   const onSelectFieldHandler = (value: string, onChangeField: (value: string) => void) => {
@@ -275,44 +360,96 @@ const TransformationForm = ({
 
   const onTransformHandler = async () => {
     setIsTransforming(true);
+    setTransformationProgress(0);
     addDebugLog('🔄 Starting transformation...');
     
     try {
-      if (type === 'cartoonify' && image?.secureURL) {
-        addDebugLog('🎨 Processing cartoonify transformation...');
-        addDebugLog('📸 Original image URL: ' + image.secureURL);
+      // Simulate progress for better UX
+      const progressInterval = setInterval(() => {
+        setTransformationProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return prev;
+          }
+          return prev + 10;
+        });
+      }, 300);
 
-        const cartoonifiedUrl = await cartoonifyImage(image.secureURL, debugMode);
-        
-        addDebugLog('✅ Cartoonify transformation complete');
-        addDebugLog('🌐 New cartoonified URL: ' + cartoonifiedUrl);
+      if (type === 'texttoimage') {
+        if (form.getValues().prompt) {
+          // Text-to-image generation from prompt
+          addDebugLog('🎨 Generating image from text prompt...');
+          const prompt = form.getValues().prompt!;
+          
+          const response = await fetch('/api/clipdrop/text-to-image', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ prompt: prompt }),
+          });
 
-        // Update image with cartoonified version
-        setImage((prev: any) => ({
-          ...prev,
-          secureURL: cartoonifiedUrl,
-          transformationURL: cartoonifiedUrl
-        }));
-
-        setTransformationConfig({ cartoonify: { enabled: true } });
-      } else if (newTransformation) {
-        setTransformationConfig(
-          deepMergeObjects(newTransformation, transformationConfig || {})
-        )
+          const result = await response.json();
+          
+          if (result.success) {
+            addDebugLog('✅ Image generated successfully');
+            
+            // Create a new image object with the generated image
+            const newImage = {
+              publicId: result.publicId || `clipdrop-${Date.now()}`,
+              secureURL: result.secureUrl || result.imageUrl,
+              width: result.width || 1024,
+              height: result.height || 1024,
+              transformationURL: result.secureUrl || result.imageUrl
+            };
+            
+            setImage(newImage);
+            form.setValue('publicId', newImage.publicId);
+            addDebugLog('📸 Image set in form');
+            
+            setTransformationConfig({ textToImage: { enabled: true } });
+            showSuccess('Image generated successfully!');
+          } else {
+            addDebugLog(`❌ Generation failed: ${result.error}`);
+            showError(result.error || 'Image generation failed');
+            throw new Error(result.error || 'Image generation failed');
+          }
+        } else {
+          addDebugLog('❌ No prompt provided for text-to-image');
+          showError('Please enter a prompt to generate an image');
+          throw new Error('Please enter a prompt to generate an image');
+        }
+      } else {
+        // Other transformation types
+        if (newTransformation) {
+          setTransformationConfig(
+            deepMergeObjects(newTransformation, transformationConfig || {})
+          )
+        } else {
+          // Ensure transformationConfig is set from transformationType config
+          setTransformationConfig(transformationType.config as unknown as Transformations)
+        }
       }
 
-      setNewTransformation(null)
+      setNewTransformation(null);
+      setTransformationProgress(100); // Complete progress
 
-      await updateCredits(userId, creditFee)
+      await updateCredits(userId, creditFee);
       addDebugLog('💳 Credits updated successfully');
+      
+      clearInterval(progressInterval);
+      
     } catch (error) {
       console.error('Transform error:', error);
       addDebugLog('❌ Transform error: ' + error);
+      showError(error instanceof Error ? error.message : 'Transformation failed');
+      
       if (debugMode) {
         setDebugLogs(prev => [...prev, `❌ Error: ${error}`]);
       }
     } finally {
       setIsTransforming(false);
+      setTransformationProgress(0);
     }
   }
 
@@ -325,7 +462,7 @@ const TransformationForm = ({
   }, [data, action, transformationType.config]);
 
   useEffect(() => {
-    if(image && (type === 'restore' || type === 'removeBackground' || type === 'cartoonify')) {
+    if(image && transformationType.config) {
       setNewTransformation(transformationType.config as unknown as Transformations)
     }
   }, [image, transformationType.config, type])
@@ -388,95 +525,87 @@ const TransformationForm = ({
           render={({ field }) => <Input {...field} className="input-field" />}
         />
 
-        {type === 'fill' && (
-          <CustomField
+        {showAspectRatio && (
+          <CustomField 
             control={form.control}
             name="aspectRatio"
             formLabel="Aspect Ratio"
             className="w-full"
             render={({ field }) => (
-              <Select
-                onValueChange={(value) => onSelectFieldHandler(value, field.onChange)}
-                value={field.value}
-                disabled={isGenerativeFillLocked}
-              >
-                <SelectTrigger className="select-field bg-white">
-                  <SelectValue placeholder="Select size" />
+              <Select onValueChange={(value) => onSelectFieldHandler(value, field.onChange)} defaultValue={field.value}>
+                <SelectTrigger className="input-field">
+                  <SelectValue placeholder="Select Aspect Ratio" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.keys(aspectRatioOptions).map((key) => (
-                    <SelectItem key={key} value={key} className="select-item">
-                      {aspectRatioOptions[key as AspectRatioKey].label}
+                  {Object.entries(aspectRatioOptions).map(([key, option]) => (
+                    <SelectItem key={key} value={key}>
+                      {option.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            )}  
+            )}
           />
         )}
 
-        {(type === 'remove' || type === 'recolor') && (
+        {showColorField && (
+          <CustomField 
+            control={form.control}
+            name="color"
+            formLabel="Replacement Color"
+            className="w-full"
+            render={({ field }) => (
+              <Input 
+                value={field.value}
+                className="input-field"
+                onChange={(e) => onInputChangeHandler(
+                  'color',
+                  e.target.value,
+                  'recolor',
+                  field.onChange
+                )}
+              />
+            )}
+          />
+        )}
+
+        {type === 'texttoimage' && (
           <div className="prompt-field">
             <CustomField 
               control={form.control}
               name="prompt"
-              formLabel={
-                type === 'remove' ? 'Object to remove' : 'Object to recolor'
-              }
+              formLabel="Image Prompt"
               className="w-full"
               render={({ field }) => (
                 <Input 
                   value={field.value}
                   className="input-field"
-                  onChange={(e) => onInputChangeHandler(
-                    'prompt',
-                    e.target.value,
-                    type,
-                    field.onChange
-                  )}
+                  placeholder="Describe the image you want to generate..."
+                  onChange={field.onChange}
                 />
               )}
             />
-
-            {type === 'recolor' && (
-              <CustomField 
-                control={form.control}
-                name="color"
-                formLabel="Replacement Color"
-                className="w-full"
-                render={({ field }) => (
-                  <Input 
-                    value={field.value}
-                    className="input-field"
-                    onChange={(e) => onInputChangeHandler(
-                      'color',
-                      e.target.value,
-                      'recolor',
-                      field.onChange
-                    )}
-                  />
-                )}
-              />
-            )}
           </div>
         )}
 
-        <div className="media-uploader-field">
-          <CustomField 
-            control={form.control}
-            name="publicId"
-            className="flex size-full flex-col"
-            render={({ field }) => (
-              <MediaUploader 
-                onValueChange={field.onChange}
-                setImage={setImage}
-                publicId={field.value}
-                image={image}
-                type={type}
-              />
-            )}
-          />
-        </div>
+        {type !== 'texttoimage' && (
+          <div className="media-uploader-field">
+            <CustomField 
+              control={form.control}
+              name="publicId"
+              className="flex size-full flex-col"
+              render={({ field }) => (
+                <MediaUploader 
+                  onValueChange={field.onChange}
+                  setImage={setImage}
+                  publicId={field.value}
+                  image={image}
+                  type={type}
+                />
+              )}
+            />
+          </div>
+        )}
 
           {isGenerativeFillLocked ? (
             <div className="flex flex-col items-center justify-center h-[450px] w-full rounded-[10px] border border-dashed bg-gray-100">
@@ -503,7 +632,7 @@ const TransformationForm = ({
           )}
         {/* Removed extra closing div to fix unclosed form error */}
         <div className="flex flex-col gap-4">
-          {type === 'cartoonify' && (
+          {type === 'texttoimage' && (
             <div className="flex items-center gap-2">
               <Button 
                 type="button"
@@ -512,58 +641,28 @@ const TransformationForm = ({
                 className="text-sm flex items-center gap-2"
               >
                 <Bug className="w-4 h-4" />
-                {debugMode ? 'Disable Debug' : 'Enable Debug'}
+                {debugMode ? 'Disable Debug' : 'Debug'}
               </Button>
-              
-              {debugMode && (
-                <Button 
-                  type="button"
-                  variant="outline"
-                  onClick={testAPIConnection}
-                  disabled={isTestingAPI}
-                  className="text-sm flex items-center gap-2"
-                >
-                  {isTestingAPI ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : apiStatus === 'connected' ? (
-                    <Wifi className="w-4 h-4 text-green-500" />
-                  ) : apiStatus === 'failed' ? (
-                    <WifiOff className="w-4 h-4 text-red-500" />
-                  ) : null}
-                  Test API
-                </Button>
-              )}
-              
-              {debugMode && (
-                <span className={`text-xs px-2 py-1 rounded ${
-                  apiStatus === 'connected' ? 'bg-green-100 text-green-800' :
-                  apiStatus === 'failed' ? 'bg-red-100 text-red-800' :
-                  'bg-gray-100 text-gray-800'
-                }`}>
-                  API: {apiStatus}
-                </span>
-              )}
             </div>
           )}
           
           <Button 
             type="button"
             className="submit-button capitalize"
-            disabled={isTransforming || !newTransformation || isGenerativeFillLocked}
+            disabled={isTransforming || (type === 'texttoimage' && !form.watch('prompt')) || isGenerativeFillLocked}
             onClick={onTransformHandler}
           >
-            {isTransforming ? 'Transforming...' : 'Apply Transformation'}
+            {isTransforming ? 'Processing...' : (type === 'texttoimage' ? 'Generate Image' : 'Apply Transformation')}
           </Button>
           <Button 
             type="submit"
             className="submit-button capitalize"
-            disabled={isSubmitting || isGenerativeFillLocked}
+            disabled={isSubmitting || (type !== 'texttoimage' && (!image || !transformationConfig)) || isGenerativeFillLocked}
           >
-            {isSubmitting ? 'Submitting...' : 'Save Image'}
+            {isSubmitting ? 'Saving...' : 'Save Image'}
           </Button>
         </div>
-
-        {debugMode && debugLogs.length > 0 && (
+        {/* {debugMode && debugLogs.length > 0 && (
           <div className="bg-gray-100 p-4 rounded-lg max-h-64 overflow-y-auto">
             <h4 className="font-semibold mb-2 flex items-center gap-2">
               <Bug className="w-4 h-4" />
@@ -586,7 +685,7 @@ const TransformationForm = ({
               Clear Logs
             </Button>
           </div>
-        )}
+        )} */}
       </form>
     </Form>
   )
