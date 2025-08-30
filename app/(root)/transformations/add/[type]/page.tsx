@@ -26,7 +26,7 @@ const AddTransformationTypePage = async ({ params }: { params: Promise<{ type: s
         subTitle={transformation.subTitle}
       />
     
-      <section className="mt-10">
+      <section className="mt-5">
         <TransformationForm 
           action="Add"
           userId={user._id}

@@ -206,7 +206,7 @@
 
   /* =====  SHADCN OVERRIDES */
   .button {
-      @apply py-4 px-6 flex justify-center items-center gap-3 rounded-lg font-semibold text-[16px] leading-[140%] !ring-offset-0 focus-visible:!ring-offset-0;
+      @apply py-4 px-6 flex justify-center items-center gap-3 rounded-md font-semibold text-[14px] leading-[140%] !ring-offset-0 focus-visible:!ring-offset-0;
   }
 
   .dropdown-content {
@@ -258,7 +258,7 @@
   }
    /* =====  SHADCN OVERRIDES */
   .button {
-    @apply py-4 px-6 flex justify-center items-center gap-3 rounded-full font-semibold text-[16px] leading-[140%] focus-visible:ring-offset-0 focus-visible:ring-transparent text-white hover:text-gray-500 hover:bg-purple-100 ;
+    @apply py-4 px-6 flex bg-gradient-to-r from-blue-800 to-fuchsia-600 justify-center items-center gap-3 rounded-md font-semibold text-[16px] leading-[140%] focus-visible:ring-offset-0 focus-visible:ring-transparent text-white hover:from-blue-800 hover:to-fuchsia-700 ;
   }
 
   .dropdown-content {
@@ -270,7 +270,7 @@
   }
 
   .input-field {
-    @apply rounded-[16px] border-2 border-purple-200/20 shadow-sm shadow-purple-200/15 text-gray-600 disabled:opacity-100 font-semibold text-[16px] leading-[140%] h-[50px] md:h-[54px] focus-visible:ring-offset-0 px-4 py-3 focus-visible:ring-transparent ;
+    @apply rounded-md border-2 border-purple-200/20 shadow-sm shadow-purple-200/15 text-gray-600 disabled:opacity-100 font-semibold text-[16px] leading-[140%] h-[50px] md:h-[54px] focus-visible:ring-offset-0 px-4 py-3 focus-visible:ring-transparent ;
   }
 
   .search-field {
@@ -278,11 +278,11 @@
   }
 
   .submit-button {
-    @apply bg-purple-600 text-gray-50 hover:bg-purple-200 hover:text-gray-500 bg-cover rounded-full py-4 px-6 font-semibold text-[16px] leading-[140%] h-[50px] w-full md:h-[54px];
+    @apply  bg-cover rounded-md py-2 px-4 font-semibold text-[14px] leading-[140%] h-[35px] md:h-[45px] cursor-pointer transition-all outline-none hover:bg-cover focus-visible:ring-offset-0 focus-visible:outline-none;
   }
 
   .select-field {
-    @apply w-full border-2 border-purple-200/20 shadow-sm shadow-purple-200/15 rounded-[16px] h-[50px] md:h-[54px] text-gray-600 font-semibold text-[16px] leading-[140%] disabled:opacity-100 placeholder:text-gray-400/50 px-4 py-3 focus:ring-offset-0 focus-visible:ring-transparent focus:ring-transparent focus-visible:ring-0 focus-visible:outline-none;
+    @apply w-full border-2 border-purple-200/20 shadow-sm shadow-purple-200/15 rounded-md h-[50px] md:h-[54px] text-gray-600 font-semibold text-[16px] leading-[140%] disabled:opacity-100 placeholder:text-gray-400/50 px-4 py-3 focus:ring-offset-0 focus-visible:ring-transparent focus:ring-transparent focus-visible:ring-0 focus-visible:outline-none;
   }
 
   .select-trigger {

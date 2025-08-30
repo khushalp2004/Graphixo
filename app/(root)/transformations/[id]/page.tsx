@@ -69,22 +69,21 @@ const ImageDetails = async ({ params }: SearchPageProps) => {
         )}
       </section>
 
-      <section className="mt-10 border-t border-gray-400/15">
+      <section className="flex flex-col mt-10 border-t border-gray-400/15 justify-center items-center">
         <div className=" transformation-grid">
           {/* MEDIA UPLOADER */}
           <div className="flex flex-col gap-4">
-            <h3 className="font-bold text-[30px] leading-[140%] text-gray-600">Original</h3>
+            <h3 className="font-bold text-[30px] leading-[140%] text-gray-600">
+              Original
+            </h3>
 
-            
-                <Image
-                  width={getImageSize(image.transformationType, image, "width")}
-                  height={getImageSize(image.transformationType, image, "height")}
-                  src={image.secureUrl}
-                  alt="Original image"
-                  className="transformation-original_image"
-                />
-              
-            
+            <Image
+              width={getImageSize(image.transformationType, image, "width")}
+              height={getImageSize(image.transformationType, image, "height")}
+              src={image.secureUrl}
+              alt="Original image"
+              className="transformation-original_image"
+            />
           </div>
 
           {/* TRANSFORMED IMAGE */}
@@ -105,14 +104,18 @@ const ImageDetails = async ({ params }: SearchPageProps) => {
         </div>
 
         {userId === image.author.clerkId && (
-          <div className="mt-4 space-y-4">
-            <Button asChild type="button" className="submit-button capitalize">
+          <div className="w-full mt-4 space-y-4 items-center justify-center gap-4">
+            <Button
+              asChild
+              type="button"
+              className="w-full capitalize h-[45px] bg-gradient-to-r from-blue-800 to-fuchsia-600 text-white hover:from-blue-800/90 hover:to-fuchsia-600/90 "
+            >
               <Link href={`/transformations/${image._id}/update`}>
                 Update Image
               </Link>
             </Button>
 
-            <DeleteConfirmation imageId={image._id?.toString() ?? ''} />
+            <DeleteConfirmation imageId={image._id?.toString() ?? ""} />
           </div>
         )}
       </section>

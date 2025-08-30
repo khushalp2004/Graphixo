@@ -41,7 +41,7 @@ import {
 } from "@/lib/actions/image.actions.new";
 import { updateCredits } from "@/lib/actions/user.actions";
 import { InsufficientCreditsModal } from "./InsufficientCreditsModal";
-import { Loader2, Bug, Wifi, WifiOff } from "lucide-react";
+import { Loader2, Bug, Wifi, WifiOff, Divide } from "lucide-react";
 import { ClipDropService } from "@/lib/services/clipdrop.service";
 
 // Type definitions
@@ -365,7 +365,7 @@ const TransformationForm = ({
             if (newImage) {
               addDebugLog("✅ Image added successfully");
               form.reset();
-              setImage(data);
+              // setImage(data); // Removed to keep generated image visible
               router.push("/");
             }
           } catch (error) {
@@ -649,67 +649,59 @@ const TransformationForm = ({
         )}
 
         {isGenerativeFillLocked && (
-          <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-lg text-center">
-            <div className="flex items-center justify-center mb-2">
-              <svg
-                className="w-8 h-8 mr-2"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <h3 className="text-xl font-bold">
-                Generative Fill{" "}
-                <span className="ml-2 text-sm bg-white text-purple-600 px-2 py-1 rounded">
-                  Pro
-                </span>
-              </h3>
-            </div>
-            <p className="mb-4">Generative Fill requires at least 11 coins</p>
-            <Button
-              type="button"
-              onClick={() => router.push("/credits")}
-              className="bg-white text-purple-600 hover:bg-gray-100"
-            >
-              Buy Credits
-            </Button>
-          </div>
+         <div className="bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 p-6 rounded-2xl shadow-lg text-center border border-gray-200">
+  <div className="flex items-center justify-center mb-4">
+    <h3 className="text-xl font-semibold text-gray-900">
+      Oops! You’re out of credits
+    </h3>
+  </div>
+
+  <p className="mb-2 text-sm text-gray-700">
+    You need at least{" "}
+    <span className="font-semibold text-blue-700">11 credits </span>  
+    to unlock <span className="text-fuchsia-600 font-semibold">Generative Fill</span>.
+  </p>
+
+  <p className="mb-6 text-xs text-gray-500">
+    Add more credits and continue creating without limits ✨
+  </p>
+
+  <Button
+    type="button"
+    onClick={() => router.push("/credits")}
+    className="bg-gradient-to-r from-blue-800 to-fuchsia-500 text-white hover:from-blue-700 hover:to-fuchsia-600 font-semibold rounded-md px-6 py-2 shadow-md transition"
+  >
+    ⚡ Buy Credits
+  </Button>
+</div>
         )}
 
         {isTextToImageLocked && (
-          <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-lg text-center">
-            <div className="flex items-center justify-center mb-2">
-              <svg
-                className="w-8 h-8 mr-2"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <h3 className="text-xl font-bold">
-                Text to Image{" "}
-                <span className="ml-2 text-sm bg-white text-purple-600 px-2 py-1 rounded">
-                  Pro
-                </span>
-              </h3>
-            </div>
-            <p className="mb-4">Text to Image requires at least 11 coins</p>
-            <Button
-              type="button"
-              onClick={() => router.push("/credits")}
-              className="bg-white text-purple-600 hover:bg-gray-100"
-            >
-              Buy Credits
-            </Button>
-          </div>
+          <div className="bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 p-6 rounded-2xl shadow-lg text-center border border-gray-200">
+  <div className="flex items-center justify-center mb-4">
+    <h3 className="text-xl font-semibold text-gray-900">
+      Oops! You’re out of credits
+    </h3>
+  </div>
+
+  <p className="mb-2 text-sm text-gray-700">
+    You need at least{" "}
+    <span className="font-semibold text-blue-700">11 credits </span>  
+    to unlock <span className="text-fuchsia-600 font-semibold">Text to Image</span>.
+  </p>
+
+  <p className="mb-6 text-xs text-gray-500">
+    Add more credits and continue creating without limits ✨
+  </p>
+
+  <Button
+    type="button"
+    onClick={() => router.push("/credits")}
+    className="bg-gradient-to-r from-blue-800 to-fuchsia-500 text-white hover:from-blue-700 hover:to-fuchsia-600 font-semibold rounded-md px-6 py-2 shadow-md transition"
+  >
+    ⚡ Buy Credits
+  </Button>
+</div>
         )}
 
         <CustomField
@@ -851,87 +843,107 @@ const TransformationForm = ({
           </div>
         )}
 
-        {type !== "texttoimage" && (
-          <div className="media-uploader-field">
-            <CustomField
-              control={form.control}
-              name="publicId"
-              className="flex size-full flex-col"
-              render={({ field }) => (
-                <MediaUploader
-                  onValueChange={field.onChange}
-                  setImage={setImage}
-                  publicId={field.value}
+        {type !== "texttoimage" ? (
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex flex-col flex-1">
+              <CustomField
+                control={form.control}
+                name="publicId"
+                className="flex size-full flex-col"
+                render={({ field }) => (
+                  <MediaUploader
+                    onValueChange={field.onChange}
+                    setImage={setImage}
+                    publicId={field.value}
+                    image={image}
+                    type={type}
+                  />
+                )}
+              />
+            </div>
+            <div className="flex flex-col flex-1">
+              {isGenerativeFillLocked ? (
+                <><label className="font-bold text-[30px] leading-[140%] text-gray-600 mb-4">
+                Transformed
+              </label>
+                <div className="flex flex-col items-center justify-center h-[34vh] w-full rounded-[10px] border border-dashed bg-gray-100">
+                  <svg
+                    className="w-16 h-16 text-gray-400 mb-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <p className="text-gray-600 font-medium">
+                    Generative Fill is a Pro Feature
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Requires 11+ coins to use
+                  </p>
+                </div>
+                </>
+              ) : isTextToImageLocked ? (
+                <>
+                <div className="flex flex-col items-center justify-center h-[34vh] w-full rounded-[10px] border border-dashed bg-gray-100">
+                  <svg
+                    className="w-16 h-16 text-gray-400 mb-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <p className="text-gray-600 font-medium">
+                    Text-to-Image is a Pro Feature
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Requires 11+ coins to use
+                  </p>
+                </div>
+                </>
+              ) : isTransforming ? (
+                <div className="flex flex-col items-center justify-center h-[450px] w-full rounded-[10px] border border-dashed bg-purple-100/20">
+                  <Loader2 className="h-10 w-10 animate-spin text-purple-500" />
+                  <p className="mt-2 text-sm text-gray-500">
+                    Transforming your image...
+                  </p>
+                </div>
+              ) : (
+                <TransformedImage
                   image={image}
                   type={type}
+                  title={form.getValues().title}
+                  isTransforming={isTransforming}
+                  setIsTransforming={setIsTransforming}
+                  transformationConfig={transformationConfig || {}}
                 />
               )}
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-6">
+            <TransformedImage
+              image={image}
+              type={type}
+              title={form.getValues().title}
+              isTransforming={isTransforming}
+              setIsTransforming={setIsTransforming}
+              transformationConfig={transformationConfig || {}}
             />
           </div>
         )}
-
-        {isGenerativeFillLocked ? (
-          <div className="flex flex-col items-center justify-center h-[450px] w-full rounded-[10px] border border-dashed bg-gray-100">
-            <svg
-              className="w-16 h-16 text-gray-400 mb-4"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <p className="text-gray-600 font-medium">
-              Generative Fill is a Pro Feature
-            </p>
-            <p className="text-sm text-gray-500 mt-1">
-              Requires 11+ coins to use
-            </p>
-          </div>
-        ) : isTextToImageLocked ? (
-          <div className="flex flex-col items-center justify-center h-[450px] w-full rounded-[10px] border border-dashed bg-gray-100">
-            <svg
-              className="w-16 h-16 text-gray-400 mb-4"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <p className="text-gray-600 font-medium">
-              Text-to-Image is a Pro Feature
-            </p>
-            <p className="text-sm text-gray-500 mt-1">
-              Requires 11+ coins to use
-            </p>
-          </div>
-        ) : isTransforming ? (
-          <div className="flex flex-col items-center justify-center h-[450px] w-full rounded-[10px] border border-dashed bg-purple-100/20">
-            <Loader2 className="h-10 w-10 animate-spin text-purple-500" />
-            <p className="mt-2 text-sm text-gray-500">
-              Transforming your image...
-            </p>
-          </div>
-        ) : (
-          <TransformedImage
-            image={image}
-            type={type}
-            title={form.getValues().title}
-            isTransforming={isTransforming}
-            setIsTransforming={setIsTransforming}
-            transformationConfig={transformationConfig || {}}
-          />
-        )}
         {/* Removed extra closing div to fix unclosed form error */}
-        <div className="flex flex-col gap-4">
+-        <div className="flex flex-col md:flex-row justify-center items-center gap-2">
           <Button
             type="button"
-            className="submit-button capitalize"
+            className="md:w-1/2 w-full h-[35px] md:h-[45px] capitalize  bg-blue-800 text-white hover:bg-blue-800/90 cursor-pointer"
             disabled={
               isTransforming ||
               (type === "texttoimage" && !form.watch("prompt")) ||
@@ -946,9 +958,11 @@ const TransformationForm = ({
               ? "Generate Image"
               : "Apply Transformation"}
           </Button>
-          <Button
+
+          {!isGenerativeFillLocked && !isTextToImageLocked ? (
+            <Button
             type="submit"
-            className="submit-button capitalize"
+            className="md:w-1/2 w-full h-[35px] md:h-[45px] rounded-md bg-fuchsia-700 hover:bg-fuchsia-700/90 cursor-pointer capitalize text-white"
             disabled={
               isSubmitting ||
               (type === "texttoimage" && !form.watch("prompt")) ||
@@ -961,31 +975,12 @@ const TransformationForm = ({
           >
             {isSubmitting ? "Saving..." : "Save Image"}
           </Button>
+          ): (
+            <></>
+          )
+        }
+          
         </div>
-        {/* {debugMode && debugLogs.length > 0 && (
-          <div className="bg-gray-100 p-4 rounded-lg max-h-64 overflow-y-auto">
-            <h4 className="font-semibold mb-2 flex items-center gap-2">
-              <Bug className="w-4 h-4" />
-              Debug Logs:
-            </h4>
-            <div className="text-xs font-mono space-y-1">
-              {debugLogs.map((log, index) => (
-                <div key={index} className="p-1 bg-white rounded text-xs">
-                  {log}
-                </div>
-              ))}
-            </div>
-            <Button 
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setDebugLogs([])}
-              className="mt-2 text-xs"
-            >
-              Clear Logs
-            </Button>
-          </div>
-        )} */}
       </form>
     </Form>
   );
