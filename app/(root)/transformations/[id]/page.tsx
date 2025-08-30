@@ -68,38 +68,60 @@ const ImageDetails = async ({ params }: SearchPageProps) => {
           </>
         )}
       </section>
+      
 
-      <section className="flex flex-col mt-10 border-t border-gray-400/15 justify-center items-center">
-        <div className=" transformation-grid">
-          {/* MEDIA UPLOADER */}
-          <div className="flex flex-col gap-4">
-            <h3 className="font-bold text-[30px] leading-[140%] text-gray-600">
-              Original
-            </h3>
 
-            <Image
-              width={getImageSize(image.transformationType, image, "width")}
-              height={getImageSize(image.transformationType, image, "height")}
-              src={image.secureUrl}
-              alt="Original image"
-              className="transformation-original_image"
-            />
-          </div>
-
-          {/* TRANSFORMED IMAGE */}
-          {image?.publicId ? (
-            <TransformedImage
-              image={image}
-              type={image.transformationType}
-              title={image.title}
-              isTransforming={false}
-              transformationConfig={image.config}
-              hasDownload={true}
-            />
+      <section className="flex flex-col mt-10 border-t border-gray-400/15">
+        <div className="transformation-grid">
+          {image.transformationType === "texttoimage" ? (
+            // TRANSFORMED IMAGE for texttoimage
+            image?.publicId ? (
+              <TransformedImage
+                image={image}
+                type={image.transformationType}
+                title={image.title}
+                isTransforming={false}
+                transformationConfig={image.config}
+                hasDownload={true}
+              />
+            ) : (
+              <div className="transformed-placeholder">
+                <p>Transformed image not available</p>
+              </div>
+            )
           ) : (
-            <div className="transformed-placeholder">
-              <p>Transformed image not available</p>
-            </div>
+            <>
+              {/* MEDIA UPLOADER */}
+              <div className="flex flex-col gap-4">
+                <h3 className="font-bold text-[30px] leading-[140%] text-gray-600">
+                  Original
+                </h3>
+
+                <Image
+                  width={getImageSize(image.transformationType, image, "width")}
+                  height={getImageSize(image.transformationType, image, "height")}
+                  src={image.secureUrl}
+                  alt="Original image"
+                  className="transformation-original_image"
+                />
+              </div>
+
+              {/* TRANSFORMED IMAGE */}
+              {image?.publicId ? (
+                <TransformedImage
+                  image={image}
+                  type={image.transformationType}
+                  title={image.title}
+                  isTransforming={false}
+                  transformationConfig={image.config}
+                  hasDownload={true}
+                />
+              ) : (
+                <div className="transformed-placeholder">
+                  <p>Transformed image not available</p>
+                </div>
+              )}
+            </>
           )}
         </div>
 
