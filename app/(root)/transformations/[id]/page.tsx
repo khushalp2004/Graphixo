@@ -70,7 +70,7 @@ const ImageDetails = async ({ params }: SearchPageProps) => {
       </section>
 
       <section className="mt-10 border-t border-gray-400/15">
-        <div className="transformation-grid">
+        <div className=" transformation-grid">
           {/* MEDIA UPLOADER */}
           <div className="flex flex-col gap-4">
             <h3 className="font-bold text-[30px] leading-[140%] text-gray-600">Original</h3>

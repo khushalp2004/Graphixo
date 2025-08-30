@@ -717,85 +717,94 @@ const TransformationForm = ({
           name="title"
           formLabel="Image Title"
           className="w-full"
-          render={({ field }) => <Input {...field} className="input-field" />}
+          render={({ field }) => <Input {...field} className="input-field" placeholder="Enter image title" />}
         />
 
         {showAspectRatio && (
-          <CustomField
-            control={form.control}
-            name="aspectRatio"
-            formLabel="Aspect Ratio"
-            className="w-full"
-            render={({ field }) => (
-              <Select
-                onValueChange={(value) =>
-                  onSelectFieldHandler(value, field.onChange)
-                }
-                defaultValue={field.value}
-              >
-                <SelectTrigger className="input-field">
-                  <SelectValue placeholder="Select Aspect Ratio" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(aspectRatioOptions).map(([key, option]) => (
-                    <SelectItem key={key} value={key}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-        )}
+  <CustomField
+    control={form.control}
+    name="aspectRatio"
+    formLabel="Aspect Ratio"
+    className="w-full"
+    render={({ field }) => (
+      <Select
+        onValueChange={(value) =>
+          onSelectFieldHandler(value, field.onChange)
+        }
+        defaultValue={field.value}
+      >
+        <SelectTrigger className="input-field w-full rounded-lg border border-gray-200 bg-white px-4 py-2 text-gray-700 shadow-md transition duration-200 cursor-pointer">
+          <SelectValue placeholder="Select Aspect Ratio" />
+        </SelectTrigger>
 
-        {showColorField && (
-          <CustomField
-            control={form.control}
-            name="color"
-            formLabel="Replacement Color"
-            className="w-full"
-            render={({ field }) => (
-              <Input
-                value={field.value}
-                className="input-field"
-                onChange={(e) =>
-                  onInputChangeHandler(
-                    "color",
-                    e.target.value,
-                    "recolor",
-                    field.onChange
-                  )
-                }
-              />
-            )}
-          />
-        )}
+        <SelectContent className="z-50 mt-2 h-auto w-full rounded-lg border border-gray-200 bg-white shadow-xl animate-in fade-in-80 slide-in-from-top-2">
+          {Object.entries(aspectRatioOptions).map(([key, option]) => (
+            <SelectItem
+              key={key}
+              value={key}
+              className="cursor-pointer px-6 py-4 rounded-md transition-colors"
+            >
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    )}
+  />
+)}
 
-        {type === "recolor" && (
-          <div className="prompt-field">
-            <CustomField
-              control={form.control}
-              name="prompt"
-              formLabel="Object to Recolor"
-              className="w-full"
-              render={({ field }) => (
-                <Input
-                  value={field.value}
-                  className="input-field"
-                  placeholder="Enter the object you want to recolor..."
-                  onChange={(e) =>
-                    onInputChangeHandler(
-                      "prompt",
-                      e.target.value,
-                      "recolor",
-                      field.onChange
-                    )
-                  }
-                />
-              )}
-            />
-          </div>
-        )}
+
+
+        <div className="flex w-full gap-4">
+  {showColorField && (
+    <CustomField
+      control={form.control}
+      name="color"
+      formLabel="Replacement Color"
+      className="w-1/2"
+      render={({ field }) => (
+        <Input
+          value={field.value}
+          className="input-field w-full"
+          placeholder="Enter the color you want to use"
+          onChange={(e) =>
+            onInputChangeHandler(
+              "color",
+              e.target.value,
+              "recolor",
+              field.onChange
+            )
+          }
+        />
+      )}
+    />
+  )}
+
+  {type === "recolor" && (
+    <CustomField
+      control={form.control}
+      name="prompt"
+      formLabel="Object to Recolor"
+      className="w-1/2"
+      render={({ field }) => (
+        <Input
+          value={field.value}
+          className="input-field w-full"
+          placeholder="Enter the object you want to recolor..."
+          onChange={(e) =>
+            onInputChangeHandler(
+              "prompt",
+              e.target.value,
+              "recolor",
+              field.onChange
+            )
+          }
+        />
+      )}
+    />
+  )}
+</div>
+
 
         {type === "remove" && (
           <div className="prompt-field">
