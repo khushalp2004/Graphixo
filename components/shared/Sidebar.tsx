@@ -36,7 +36,7 @@ const Sidebar = () => {
                         <ul className='sidebar-nav_elements space-y-2'>
                             {navLinks.slice(0,6).map((link) => {
                                 const isActive = link.route === pathname;
-                                const isPro = link.label === "Generative Fill";
+                                const isPro = link.label === "Generative Fill" || link.label=== "Text to Image";
                                 const showProLabel = isPro && creditBalance <= 11;
 
                                 return(

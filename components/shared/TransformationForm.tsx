@@ -124,6 +124,9 @@ const TransformationForm = ({
 
   // Check if generative fill is locked (less than 11 coins) - only for fill type
   const isGenerativeFillLocked = type === "fill" && creditBalance < 11;
+  
+  // Check if text-to-image is locked (less than 11 coins) - only for texttoimage type
+  const isTextToImageLocked = type === "texttoimage" && creditBalance < 11;
 
   // For text-to-image, we don't need aspect ratio or color fields
   const showAspectRatio = type === "fill";
@@ -677,6 +680,38 @@ const TransformationForm = ({
           </div>
         )}
 
+        {isTextToImageLocked && (
+          <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-lg text-center">
+            <div className="flex items-center justify-center mb-2">
+              <svg
+                className="w-8 h-8 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <h3 className="text-xl font-bold">
+                Text-to-Image{" "}
+                <span className="ml-2 text-sm bg-white text-purple-600 px-2 py-1 rounded">
+                  Pro
+                </span>
+              </h3>
+            </div>
+            <p className="mb-4">Text-to-Image requires at least 11 coins</p>
+            <Button
+              type="button"
+              onClick={() => router.push("/credits")}
+              className="bg-white text-purple-600 hover:bg-gray-100"
+            >
+              Buy Credits
+            </Button>
+          </div>
+        )}
+
         <CustomField
           control={form.control}
           name="title"
@@ -846,6 +881,26 @@ const TransformationForm = ({
               Requires 11+ coins to use
             </p>
           </div>
+        ) : isTextToImageLocked ? (
+          <div className="flex flex-col items-center justify-center h-[450px] w-full rounded-[10px] border border-dashed bg-gray-100">
+            <svg
+              className="w-16 h-16 text-gray-400 mb-4"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <p className="text-gray-600 font-medium">
+              Text-to-Image is a Pro Feature
+            </p>
+            <p className="text-sm text-gray-500 mt-1">
+              Requires 11+ coins to use
+            </p>
+          </div>
         ) : isTransforming ? (
           <div className="flex flex-col items-center justify-center h-[450px] w-full rounded-[10px] border border-dashed bg-purple-100/20">
             <Loader2 className="h-10 w-10 animate-spin text-purple-500" />
@@ -871,7 +926,8 @@ const TransformationForm = ({
             disabled={
               isTransforming ||
               (type === "texttoimage" && !form.watch("prompt")) ||
-              isGenerativeFillLocked
+              isGenerativeFillLocked ||
+              isTextToImageLocked
             }
             onClick={onTransformHandler}
           >
@@ -890,7 +946,8 @@ const TransformationForm = ({
               (type !== "texttoimage" && !image) ||
               ((type === "remove" || type === "recolor") &&
                 !form.watch("prompt")) ||
-              isGenerativeFillLocked
+              isGenerativeFillLocked ||
+              isTextToImageLocked
             }
           >
             {isSubmitting ? "Saving..." : "Save Image"}
