@@ -70,7 +70,6 @@ const MediaUploader = ({
                         placeholder={dataUrl as PlaceholderValue}
                         className="media-uploader_clfImage"
                         />
-                        Here is the image
                     </div>
                 ):(
                     <div className="media-uploader_cta" onClick={()=>open()}>

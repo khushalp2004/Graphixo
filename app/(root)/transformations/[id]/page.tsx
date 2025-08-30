@@ -31,7 +31,7 @@ const ImageDetails = async ({ params }: SearchPageProps) => {
       <Header title={image.title} />
 
       <section className="mt-5 flex flex-wrap gap-4">
-        <div className="font-medium text-[14px] leading-[120%] md:font-medium text-[16px] leading-[140%] flex gap-2">
+        <div className="font-medium md:font-medium text-[16px] leading-[140%] flex gap-2">
           <p className="text-gray-600">Transformation:</p>
           <p className=" capitalize text-purple-400">
             {image.transformationType}
@@ -41,7 +41,7 @@ const ImageDetails = async ({ params }: SearchPageProps) => {
         {image.prompt && (
           <>
             <p className="hidden text-gray-400/50 md:block">&#x25CF;</p>
-            <div className="font-medium text-[14px] leading-[120%] md:font-medium text-[16px] leading-[140%] flex gap-2 ">
+            <div className="font-medium md:font-medium text-[16px] leading-[140%] flex gap-2 ">
               <p className="text-gray-600">Prompt:</p>
               <p className=" capitalize text-purple-400">{image.prompt}</p>
             </div>
@@ -51,7 +51,7 @@ const ImageDetails = async ({ params }: SearchPageProps) => {
         {image.color && (
           <>
             <p className="hidden text-gray-400/50 md:block">&#x25CF;</p>
-            <div className="font-medium text-[14px] leading-[120%] md:font-medium text-[16px] leading-[140%] flex gap-2">
+            <div className="font-medium md:font-medium text-[16px] leading-[140%] flex gap-2">
               <p className="text-gray-600">Color:</p>
               <p className=" capitalize text-purple-400">{image.color}</p>
             </div>
@@ -61,7 +61,7 @@ const ImageDetails = async ({ params }: SearchPageProps) => {
         {image.aspectRatio && (
           <>
             <p className="hidden text-gray-400/50 md:block">&#x25CF;</p>
-            <div className="font-medium text-[14px] leading-[120%] md:font-medium text-[16px] leading-[140%] flex gap-2">
+            <div className="font-medium md:font-medium text-[16px] leading-[140%] flex gap-2">
               <p className="text-gray-600">Aspect Ratio:</p>
               <p className=" capitalize text-purple-400">{image.aspectRatio}</p>
             </div>

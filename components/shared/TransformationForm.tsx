@@ -695,13 +695,13 @@ const TransformationForm = ({
                 />
               </svg>
               <h3 className="text-xl font-bold">
-                Text-to-Image{" "}
+                Text to Image{" "}
                 <span className="ml-2 text-sm bg-white text-purple-600 px-2 py-1 rounded">
                   Pro
                 </span>
               </h3>
             </div>
-            <p className="mb-4">Text-to-Image requires at least 11 coins</p>
+            <p className="mb-4">Text to Image requires at least 11 coins</p>
             <Button
               type="button"
               onClick={() => router.push("/credits")}
@@ -838,7 +838,7 @@ const TransformationForm = ({
               control={form.control}
               name="prompt"
               formLabel="Image Prompt"
-              className="w-full"
+              className="w-full mt-[-30px]"
               render={({ field }) => (
                 <Input
                   value={field.value}
