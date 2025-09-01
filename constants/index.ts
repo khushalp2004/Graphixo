@@ -27,7 +27,7 @@ export const navLinks = [
     {
       label: "Text to Image",
       route: "/transformations/add/texttoimage",
-      icon: "/assets/icons/filter.svg",
+      icon: "/assets/icons/text-to-image.png",
     },
     {
       label: "Profile",
