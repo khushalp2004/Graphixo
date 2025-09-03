@@ -56,7 +56,7 @@ const MobileNav = () => {
                                 <ul className='header-nav_elements p-4 flex-1 overflow-y-auto'>
                                     {navLinks.map((link) => {
                                         const isActive = link.route === pathname;
-                                        const isPro = link.label === "Generative Fill";
+                                        const isPro = (link.label === "Generative Fill" || link.label==="Text to Image");
                                         const showProLabel = isPro && userCredits <= 11;
 
                                         return(
